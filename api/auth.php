@@ -1,4 +1,10 @@
 <?php
+// Configuração de sessão para HTTPS no Railway
+ini_set('session.cookie_secure', '1');
+ini_set('session.cookie_httponly', '1');
+ini_set('session.cookie_samesite', 'None');
+ini_set('session.use_strict_mode', '1');
+
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/helpers.php';
@@ -30,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'register') {
     $email       = strtolower(trim($body['email'] ?? ''));
     $password    = $body['password'] ?? '';
     $displayName = trim($body['displayName'] ?? '');
-    if (!$displayName) $displayName = explode('@', $email)[0]; // usa parte do email se nome vazio
+    if (!$displayName) $displayName = explode('@', $email)[0];
 
     if (!$email || !$password) jsonResponse(['error' => 'Email e password são obrigatórios'], 400);
     if (strlen($password) < 6)  jsonResponse(['error' => 'Password deve ter pelo menos 6 caracteres'], 400);
