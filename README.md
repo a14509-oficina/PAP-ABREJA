@@ -40,3 +40,12 @@ Edite o ficheiro `includes/config.php` e adicione as suas credenciais:
 ```php
 define('SUPABASE_URL', 'https://seuid.supabase.co');
 define('SUPABASE_ANON_KEY', 'sua-chave-anon-aqui');
+
+
+├── api/              # Endpoints da API (auth, gates, admin)
+├── includes/         # Lógica central, config e conexão ao BD
+├── style.css         # Estilização completa do sistema
+├── app.js            # Lógica de frontend e chamadas API
+├── index.php         # Página de login/entrada
+├── admin_panel.php   # Painel de administração
+└── abrir_portao.php  # Script de acionamento do portão
