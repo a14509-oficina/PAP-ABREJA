@@ -1,7 +1,5 @@
 <?php
-// Supabase configuration - generated
-define('SUPABASE_URL', 'https://fmjytigqgpfocurpjvtv.supabase.co');
-define('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtanl0aWdxZ3Bmb2N1cnBqdnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MzM3MDYsImV4cCI6MjA5MzEwOTcwNn0.2rpUjyVQ80MaMptmF-LtMhGeEq1LaliMSKXkglsYhcE');
-// Optional publishable key
-define('SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_PD-ZlUEG1KFgRI8fi3nxBA_Pcx3JNmx');
+define('SUPABASE_URL', 'https://nknpvvkvrbepwakhzefj.supabase.co');
+define('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbnB2dmt2cmJlcHdha2h6ZWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NDg5OTMsImV4cCI6MjA5NzEyNDk5M30.KdYAiPBQmJqrR20XhBz2jzSQkVEePhsim7omQZmaxXU');
+define('SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_rQ-dl9bAxU-xz_Me_NOBTQ_vxhThYH5');
 ?>
