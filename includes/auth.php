@@ -1,42 +1,31 @@
 <?php
-function startSession(): void {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.cookie_samesite', 'Lax');
+    session_start();
 }
 
 function getLoggedUser(): ?array {
-    startSession();
     return $_SESSION['user'] ?? null;
 }
 
-function requireAuth(): void {
-    $user = getLoggedUser();
-    if (!$user) {
-        http_response_code(401);
-        die(json_encode(['error' => 'Não autenticado']));
-    }
-}
-
-function requireAdmin(): void {
-    $user = getLoggedUser();
-    if (!$user || empty($user['isAdmin'])) {
-        http_response_code(403);
-        die(json_encode(['error' => 'Acesso negado']));
-    }
-}
-
 function setLoggedUser(array $user): void {
-    startSession();
     $_SESSION['user'] = $user;
 }
 
 function logoutUser(): void {
-    startSession();
     $_SESSION = [];
-    session_unset();
-    session_destroy();
-    if (isset($_COOKIE[session_name()])) {
-        setcookie(session_name(), '', time() - 3600, '/');
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_destroy();
+    }
+}
+
+function requireAuth(): void {
+    if (!getLoggedUser()) {
+        http_response_code(401);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => 'Não autenticado']);
+        exit;
     }
 }
