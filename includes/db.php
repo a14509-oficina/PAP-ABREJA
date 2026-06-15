@@ -1,19 +1,8 @@
 <?php
 require_once __DIR__ . '/config.php';
-// ─────────────────────────────────────────────
-//  Ligação ao Supabase (substitui o MySQL/XAMPP)
-// ─────────────────────────────────────────────
-// SUPABASE_URL já definido em config.php
-define('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtanl0aWdxZ3Bmb2N1cnBqdnR2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzUzMzcwNiwiZXhwIjoyMDkzMTA5NzA2fQ.eMSp9S4hOALQCKIcDdIWmDo_ioi_TyyJFSdOhY2uAHA');
 
-/**
- * Faz um pedido REST à API do Supabase.
- *
- * @param string      $endpoint  ex: "users?email=eq.foo@bar.com&select=*"
- * @param string      $method    GET | POST | PATCH | DELETE
- * @param array|null  $data      corpo JSON (para POST/PATCH)
- * @return array                 resposta descodificada
- */
+define('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbnB2dmt2cmJlcHdha2h6ZWZqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTU0ODk5MywiZXhwIjoyMDk3MTI0OTkzfQ.CQ_HcW0f4TxtLCdqH7mMJxEcJeVM0g_3hRA8zehgEOc');
+
 function supabase(string $endpoint, string $method = 'GET', ?array $data = null): array {
     $ch = curl_init(SUPABASE_URL . '/rest/v1/' . $endpoint);
     curl_setopt_array($ch, [
@@ -36,3 +25,4 @@ function supabase(string $endpoint, string $method = 'GET', ?array $data = null)
     curl_close($ch);
     return json_decode($response, true) ?? [];
 }
+?>
