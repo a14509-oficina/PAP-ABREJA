@@ -43,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'register') {
         'email'    => $email,
         'password' => $hash,
         'name'     => $displayName,
-        'role'     => 'user',
     ]);
 
     if (empty($result[0])) jsonResponse(['error' => 'Erro ao criar conta', 'detalhe' => $result], 500);
@@ -74,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
         jsonResponse(['error' => 'Email ou password incorretos'], 401);
     }
 
-    $blocked = supabase('blocked_users?blocked_user_id=eq.' . $row['id'] . '&select=id');
+    $blocked = supabase('blocked_users?user_id=eq.' . $row['id'] . '&select=id');
     if (!empty($blocked)) jsonResponse(['error' => 'Conta bloqueada'], 403);
 
     $userData = rowToUser($row);

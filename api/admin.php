@@ -27,7 +27,7 @@ switch ($action) {
         $gates  = supabase('gates?select=id');
         $shares = supabase('gate_shares?select=id');
         $today  = date('Y-m-d') . 'T00:00:00';
-        $logs   = supabase('access_log?created_at=gte.' . urlencode($today) . '&select=id');
+        $logs   = supabase('access_logs?created_at=gte.' . urlencode($today) . '&select=id');
         jsonResponse([
             'users'      => count($users),
             'cars'       => count($cars),
@@ -60,9 +60,13 @@ switch ($action) {
     case 'logs':
         $userId = $_GET['user_id'] ?? '';
         $filter = $userId
-            ? 'access_log?user_id=eq.' . urlencode($userId) . '&order=opened_at.desc&limit=50&select=*'
-            : 'access_log?order=opened_at.desc&limit=100&select=*';
+            ? 'access_logs?user_id=eq.' . urlencode($userId) . '&order=created_at.desc&limit=50&select=*'
+            : 'access_logs?order=created_at.desc&limit=100&select=*';
         $rows = supabase($filter);
+        $rows = array_map(function ($r) {
+            $r['opened_at'] = $r['created_at'] ?? null;
+            return $r;
+        }, $rows);
         jsonResponse($rows);
 
     case 'admin-log':
