@@ -11,19 +11,27 @@ if (!$sessionUser) {
 
 $data = getBody();
 $gateName = $data['gate_name'] ?? 'Portão Principal';
+$gateId   = $data['gate_id'] ?? null;
 $userId   = $sessionUser['id'];
 $userName = $sessionUser['displayName'] ?: ($sessionUser['email'] ?? 'Utilizador');
 
-// 1. REGISTAR NO HISTÓRICO (Supabase)
-// Registamos quem abriu, o quê e a hora (o Supabase gera o created_at automaticamente)
-supabase('access_logs', 'POST', [
+// 1. CRIAR PEDIDO para o hardware (ipcam.py faz polling a open_requests)
+$requestData = [
     'user_id' => $userId,
-    'user_name' => $userName,
-    'gate_name' => $gateName
-]);
+    'status'  => 'pending',
+    'source'  => 'app',
+];
+if ($gateId) {
+    $requestData['gate_id'] = $gateId;
+}
+supabase('open_requests', 'POST', $requestData);
 
-// 2. AÇÃO REAL (Executar o script Python existente)
-// O ipcam.py é chamado para interagir com o hardware
-exec("python3 ipcam.py"); 
+// 2. REGISTAR NO HISTÓRICO
+supabase('access_logs', 'POST', [
+    'gate_id' => $gateId,
+    'user_id' => $userId,
+    'action'  => 'open',
+    'method'  => 'app',
+]);
 
 jsonResponse(['success' => "Portão $gateName aberto e registado!"]);

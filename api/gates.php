@@ -139,6 +139,13 @@ if ($method === 'POST' && $id && $action === 'open') {
         jsonResponse(['error' => 'Portão não encontrado'], 404);
     }
 
+    supabase('open_requests', 'POST', [
+        'gate_id' => $id,
+        'user_id' => $userId,
+        'status'  => 'pending',
+        'source'  => 'app',
+    ]);
+
     supabase('access_logs', 'POST', [
         'gate_id' => $id,
         'user_id' => $userId,
