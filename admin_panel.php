@@ -180,7 +180,7 @@ $user = $_SESSION['admin_user'] ?? null;
       <button class="tab" onclick="chTab('gates', this)">Portões (Novo)</button>
       <button class="tab" onclick="chTab('logs', this)">Logs do Sistema</button>
       <button class="tab" onclick="chTab('admin-log', this)">Registos Admin</button>
-      <button class="tab" onclick="chTab('chat', this)">Chat Admin</button>
+      <button class="tab" onclick="chTab('chat', this)" style="opacity:0.4">Chat Admin</button>
       <button class="tab" onclick="chTab('settings', this)">Definições</button>
     </div>
 
@@ -265,7 +265,7 @@ $user = $_SESSION['admin_user'] ?? null;
 
   <script>
     // Configurações Globais de API e Helpers
-    const ADMIN_ID = <?= (int)$user['id'] ?>;
+    const ADMIN_ID = '<?= $user['id'] ?>';
     const token = '<?=bin2hex($user['email']??'')?>'; 
     async function api(method, url, data=null) {
       const headers = {'Content-Type':'application/json','X-Admin-Auth':token};
@@ -332,7 +332,6 @@ $user = $_SESSION['admin_user'] ?? null;
         let b = '';
         if(u.is_super_admin) b += '<span class="badge badge-super">Super</span>';
         else if(u.is_admin) b += '<span class="badge badge-admin">Admin</span>';
-        if(u.is_blocked) b += '<span class="badge badge-blocked">Bloqueado</span>';
 
         const initial = (u.display_name || u.email || 'U').charAt(0).toUpperCase();
         const avBg = u.avatar_color || 'var(--secondary)';
@@ -348,8 +347,8 @@ $user = $_SESSION['admin_user'] ?? null;
               </div>
             </div>
             <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
-              ${canDelete ? `<a class="btn btn-danger btn-sm" href="admin_action.php?action=delete&id=${u.id}&email=${encodeURIComponent(u.email)}">Eliminar</a>` : ''}
-              ${u.id !== ADMIN_ID && !u.is_super_admin ? `<a class="btn btn-ghost btn-sm" href="admin_action.php?action=toggle&mode=${u.is_admin ? 'demote' : 'promote'}&id=${u.id}&email=${encodeURIComponent(u.email)}">${u.is_admin ? 'Remover Admin' : 'Tornar Admin'}</a>` : ''}
+              ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.email.replace(/'/g, "\\'")}')">Eliminar</button>` : ''}
+              ${u.id !== ADMIN_ID && !u.is_super_admin ? `<button class="btn btn-ghost btn-sm" onclick="toggleAdmin('${u.id}',${u.is_admin},'${u.email.replace(/'/g, "\\'")}')">${u.is_admin ? 'Remover Admin' : 'Tornar Admin'}</button>` : ''}
             </div>
           </div>
         `;
@@ -366,41 +365,7 @@ $user = $_SESSION['admin_user'] ?? null;
       }
     }
 
-    async function loadUsers_old() {
-      try {
-        const users = await api('GET', 'api/admin.php?action=users');
-        if(!users.length) { document.getElementById('users-wrap').innerHTML = '<p style="padding:1.5rem;color:var(--muted)">Sem utilizadores.</p>'; return; }
-        document.getElementById('users-wrap').innerHTML = users.map(u => {
-          let b = '';
-          if(u.is_super_admin) b += '<span class="badge badge-super">Super</span>';
-          else if(u.is_admin) b += '<span class="badge badge-admin">Admin</span>';
-          if(u.is_blocked) b += '<span class="badge badge-blocked">Bloqueado</span>';
-          
-          const initial = (u.display_name || u.email || 'U').charAt(0).toUpperCase();
-          const avBg = u.avatar_color || 'var(--secondary)';
-          const canDelete = u.id !== ADMIN_ID;
-          
-          return `
-            <div class="user-row" style="justify-content:space-between;align-items:center">
-              <div style="display:flex;align-items:center;gap:.75rem;flex:1;cursor:pointer" onclick="window.location.href='profile_view.php?id=${u.id}'">
-                <div class="avatar" style="background:${avBg}">${initial}</div>
-                <div class="user-info">
-                  <div class="user-name">${u.display_name || 'Utilizador'} ${b}</div>
-                  <div class="user-email">${u.email}</div>
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;gap:.5rem">
-                ${canDelete ? `<a class="btn btn-danger btn-sm" href="admin_action.php?action=delete&id=${u.id}&email=${encodeURIComponent(u.email)}">Eliminar</a>` : ''}
-                ${u.id !== ADMIN_ID && !u.is_super_admin ? `<a class="btn btn-ghost btn-sm" href="admin_action.php?action=toggle&mode=${u.is_admin ? 'demote' : 'promote'}&id=${u.id}&email=${encodeURIComponent(u.email)}">${u.is_admin ? 'Remover Admin' : 'Tornar Admin'}</a>` : ''}
-                <div style="color:var(--muted);font-size:.8rem">➔</div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } catch(e) {
-        document.getElementById('users-wrap').innerHTML = `<p style="color:var(--destructive);padding:1.5rem">${e.message}</p>`;
-      }
-    }
+
 
     // NOVA FUNÇÃO: Carregar Portões na Vista Administrativa
     async function loadAdminGates() {
@@ -411,7 +376,7 @@ $user = $_SESSION['admin_user'] ?? null;
           <div class="gate-row" style="display:flex;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--border)">
             <div>
               <div style="font-weight:600">${g.name}</div>
-              <div style="font-size:.75rem;color:var(--muted)">Relay: <code>${g.relay_trigger || g.id}</code></div>
+              <div style="font-size:.75rem;color:var(--muted)">Relay: <code>${g.relay_id || g.id}</code></div>
             </div>
             <div>
               <button class="btn btn-danger btn-sm" onclick="deleteGate('${g.id}')">Remover</button>
@@ -500,6 +465,37 @@ $user = $_SESSION['admin_user'] ?? null;
       const div = document.createElement('div');
       div.textContent = value || '';
       return div.innerHTML;
+    }
+
+    // ── Chat Admin ────────────────────────────────────────────────────────────
+    async function loadAdminChat() {
+      document.getElementById('admin-chat-list').innerHTML = '<p style="color:var(--muted);font-size:.85rem;padding:.5rem 0">Chat disponível em breve.</p>';
+    }
+    async function sendAdminChat() {
+      toast('Chat', 'Disponível em breve', '');
+    }
+
+    // ── Ações de Utilizador (em vez de admin_action.php) ──────────────────────
+    async function deleteUser(id, email) {
+      const reason = prompt('Motivo para eliminar ' + email + ':');
+      if (!reason) return;
+      if (!confirm('Tem a certeza que pretende eliminar ' + email + '?')) return;
+      try {
+        await api('DELETE', 'api/admin.php?action=user&id=' + id, { reason });
+        toast('Utilizador eliminado', '', 'success');
+        loadUsers();
+      } catch(e) { toast('Erro', e.message, 'error'); }
+    }
+
+    async function toggleAdmin(id, isAdmin, email) {
+      const action = isAdmin ? 'remover admin' : 'tornar admin';
+      const reason = prompt('Motivo para ' + action + ' ' + email + ':');
+      if (!reason) return;
+      try {
+        await api('PATCH', 'api/admin.php?action=user&id=' + id, { is_admin: !isAdmin, reason });
+        toast('Admin atualizado', '', 'success');
+        loadUsers();
+      } catch(e) { toast('Erro', e.message, 'error'); }
     }
 
     // Definições de Modo de Manutenção Originais

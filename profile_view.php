@@ -17,8 +17,8 @@ if (empty($client_res)) die('Cliente não encontrado.');
 $client = $client_res[0];
 
 $cars  = supabase('cars?user_id=eq.'  . urlencode($client_id) . '&select=*&order=created_at.desc');
-$gates = supabase('gates?user_id=eq.' . urlencode($client_id) . '&select=*&order=name.asc');
-$logs  = supabase('access_log?user_id=eq.' . urlencode($client_id) . '&select=*&order=opened_at.desc&limit=50');
+$gates = supabase('gates?created_by=eq.' . urlencode($client_id) . '&select=*&order=name.asc');
+$logs  = supabase('access_logs?user_id=eq.' . urlencode($client_id) . '&select=*&order=created_at.desc&limit=50');
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -111,9 +111,9 @@ $logs  = supabase('access_log?user_id=eq.' . urlencode($client_id) . '&select=*&
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('cars')">🚗 Carros (<?=count($cars)?>)</button>
-    <button class="tab" onclick="switchTab('gates')">🚪 Portões (<?=count($gates)?>)</button>
-    <button class="tab" onclick="switchTab('logs')">📋 Logs (<?=count($logs)?>)</button>
+    <button class="tab active" onclick="switchTab('cars', this)">🚗 Carros (<?=count($cars)?>)</button>
+    <button class="tab" onclick="switchTab('gates', this)">🚪 Portões (<?=count($gates)?>)</button>
+    <button class="tab" onclick="switchTab('logs', this)">📋 Logs (<?=count($logs)?>)</button>
   </div>
 
   <!-- TAB: CARROS -->
@@ -185,7 +185,7 @@ $logs  = supabase('access_log?user_id=eq.' . urlencode($client_id) . '&select=*&
             $isOk     = $method === 'plate' || $method === 'app';
             $isDenied = $method === 'plate_denied';
             $plate    = $log_entry['plate'] ?? null;
-            $ts       = $log_entry['opened_at'] ?? '';
+            $ts       = $log_entry['created_at'] ?? '';
             $tsFormatted = $ts ? date('d/m/Y H:i:s', strtotime($ts)) : '—';
           ?>
             <div class="log-row">
@@ -246,11 +246,11 @@ $logs  = supabase('access_log?user_id=eq.' . urlencode($client_id) . '&select=*&
 const CLIENT_ID = <?=json_encode($client_id)?>;
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-function switchTab(name) {
+function switchTab(name, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
+  el.classList.add('active');
 }
 
 // ── Modal helpers ─────────────────────────────────────────────────────────────

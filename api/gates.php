@@ -17,6 +17,13 @@ $action = $_GET['action'] ?? '';
 
 // ── GET: listar portões do utilizador ─────────────────────────────────────
 if ($method === 'GET' && !$id && !$action) {
+    $isAdmin = !empty($user['isAdmin']);
+
+    if ($isAdmin) {
+        $gates = supabase('gates?select=*&order=name.asc');
+        jsonResponse($gates);
+    }
+
     $ownGates = supabase('gates?created_by=eq.' . urlencode($userId) . '&select=*&order=name.asc');
     $ownIds = array_column($ownGates, 'id');
 
@@ -82,6 +89,7 @@ if ($method === 'POST' && !$id && !$action) {
 
 // ── PUT: editar portão ────────────────────────────────────────────────────
 if ($method === 'PUT' && $id) {
+    $isAdmin = !empty($user['isAdmin']);
     $body = getBody();
     $patch = [];
     if (isset($body['name']))    $patch['name'] = trim($body['name']);
@@ -95,9 +103,11 @@ if ($method === 'PUT' && $id) {
         jsonResponse(['error' => 'Nada para atualizar'], 400);
     }
 
-    $existing = supabase('gates?id=eq.' . urlencode($id) . '&created_by=eq.' . urlencode($userId) . '&select=id');
-    if (empty($existing)) {
-        jsonResponse(['error' => 'Portão não encontrado ou sem permissão'], 404);
+    if (!$isAdmin) {
+        $existing = supabase('gates?id=eq.' . urlencode($id) . '&created_by=eq.' . urlencode($userId) . '&select=id');
+        if (empty($existing)) {
+            jsonResponse(['error' => 'Portão não encontrado ou sem permissão'], 404);
+        }
     }
 
     $result = supabase('gates?id=eq.' . urlencode($id), 'PATCH', $patch);
@@ -109,9 +119,13 @@ if ($method === 'PUT' && $id) {
 
 // ── DELETE: eliminar portão ───────────────────────────────────────────────
 if ($method === 'DELETE' && $id && !$action) {
-    $existing = supabase('gates?id=eq.' . urlencode($id) . '&created_by=eq.' . urlencode($userId) . '&select=id');
-    if (empty($existing)) {
-        jsonResponse(['error' => 'Portão não encontrado ou sem permissão'], 404);
+    $isAdmin = !empty($user['isAdmin']);
+
+    if (!$isAdmin) {
+        $existing = supabase('gates?id=eq.' . urlencode($id) . '&created_by=eq.' . urlencode($userId) . '&select=id');
+        if (empty($existing)) {
+            jsonResponse(['error' => 'Portão não encontrado ou sem permissão'], 404);
+        }
     }
 
     supabase('gates?id=eq.' . urlencode($id), 'DELETE');
