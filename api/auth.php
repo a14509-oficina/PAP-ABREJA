@@ -167,8 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'forgot') {
     $baseUrl = APP_URL ?: (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
     $resetUrl = $baseUrl . '/reset_password.php?token=' . urlencode($token);
 
-    sendResetEmail($user['email'], $resetUrl);
-    jsonResponse(['ok' => true], 200);
+    jsonResponse(['ok' => true, 'reset_url' => $resetUrl], 200);
 }
 
 // POST ?action=reset
