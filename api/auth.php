@@ -112,18 +112,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'forgot') {
 
     $user    = $result[0];
     $token   = bin2hex(random_bytes(32));
-    $expires = time() + 3600;
+    $tokenHash = hash('sha256', $token);
+    $expires = date('c', time() + 3600);
 
-    $tokenDir  = __DIR__ . '/../.cache';
-    @mkdir($tokenDir, 0755, true);
-    $tokenFile = $tokenDir . '/' . hash('sha256', $token) . '.json';
-    file_put_contents($tokenFile, json_encode([
-        'user_id' => $user['id'],
-        'email'   => $user['email'],
-        'token'   => $token,
-        'expires' => $expires,
-    ]));
-    chmod($tokenFile, 0600);
+    supabase('settings', 'POST', [
+        'key'   => 'pwd_reset:' . $tokenHash,
+        'value' => json_encode([
+            'user_id' => $user['id'],
+            'email'   => $user['email'],
+            'expires' => $expires,
+        ]),
+    ]);
 
     $resetUrl = 'reset_password.php?token=' . urlencode($token);
     jsonResponse(['ok' => true, 'resetUrl' => $resetUrl], 200);
@@ -138,17 +137,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reset') {
     if (!$token || !$password) jsonResponse(['error' => 'Token e password são obrigatórios'], 400);
     if (strlen($password) < 6)  jsonResponse(['error' => 'Password deve ter pelo menos 6 caracteres'], 400);
 
-    $tokenDir  = __DIR__ . '/../.cache';
-    $tokenFile = $tokenDir . '/' . hash('sha256', $token) . '.json';
-    if (!file_exists($tokenFile)) jsonResponse(['error' => 'Token inválido'], 400);
+    $tokenHash = hash('sha256', $token);
+    $rows = supabase('settings?key=eq.pwd_reset:' . $tokenHash . '&select=value');
+    if (empty($rows)) jsonResponse(['error' => 'Token inválido'], 400);
 
-    $data = json_decode(file_get_contents($tokenFile), true);
-    if (!$data || $data['token'] !== $token) jsonResponse(['error' => 'Token inválido'], 400);
-    if ($data['expires'] < time())            jsonResponse(['error' => 'Token expirou'], 400);
+    $data = json_decode($rows[0]['value'], true);
+    if (!$data) jsonResponse(['error' => 'Token inválido'], 400);
+    if (strtotime($data['expires']) < time()) {
+        supabase('settings?key=eq.pwd_reset:' . $tokenHash, 'DELETE', []);
+        jsonResponse(['error' => 'Token expirou'], 400);
+    }
 
     $hash = password_hash($password, PASSWORD_BCRYPT);
     supabase('users?id=eq.' . $data['user_id'], 'PATCH', ['password' => $hash]);
-    @unlink($tokenFile);
+    supabase('settings?key=eq.pwd_reset:' . $tokenHash, 'DELETE', []);
+    jsonResponse(['ok' => true]);
+}
+
+// PUT ?action=password
+if ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action === 'password') {
+    requireAuth();
+    $user    = getLoggedUser();
+    $body    = getBody();
+    $current = $body['current'] ?? '';
+    $newPw   = $body['new'] ?? '';
+
+    if (!$current || !$newPw) jsonResponse(['error' => 'Password atual e nova são obrigatórias'], 400);
+    if (strlen($newPw) < 6)   jsonResponse(['error' => 'Nova password deve ter pelo menos 6 caracteres'], 400);
+
+    $rows = supabase('users?id=eq.' . $user['id'] . '&select=password');
+    if (empty($rows)) jsonResponse(['error' => 'Utilizador não encontrado'], 404);
+
+    if (!password_verify($current, $rows[0]['password'])) {
+        jsonResponse(['error' => 'Password atual incorreta'], 400);
+    }
+
+    $hash = password_hash($newPw, PASSWORD_BCRYPT);
+    supabase('users?id=eq.' . $user['id'], 'PATCH', ['password' => $hash]);
     jsonResponse(['ok' => true]);
 }
 

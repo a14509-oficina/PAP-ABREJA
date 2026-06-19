@@ -7,53 +7,43 @@ $error = '';
 $success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email     = strtolower(trim($_POST['email'] ?? ''));
     $password  = $_POST['password'] ?? '';
     $password2 = $_POST['password2'] ?? '';
 
-    if (!$password || !$password2 || (!$token && !$email)) {
+    if (!$token) {
+        $error = 'Token de recuperação em falta';
+    } elseif (!$password || !$password2) {
         $error = 'Todos os campos são obrigatórios';
     } elseif (strlen($password) < 6) {
         $error = 'Password deve ter pelo menos 6 caracteres';
     } elseif ($password !== $password2) {
         $error = 'As passwords não coincidem';
     } else {
-        if ($token) {
-            $tokenDir = __DIR__ . '/.cache';
-            $tokenFile = $tokenDir . '/' . hash('sha256', $token) . '.json';
+        $tokenHash = hash('sha256', $token);
+        $rows = supabase('settings?key=eq.pwd_reset:' . $tokenHash . '&select=value');
 
-            if (!file_exists($tokenFile)) {
-                $error = 'Token inválido';
-            } else {
-                $data = json_decode(file_get_contents($tokenFile), true);
-                if (!$data || $data['token'] !== $token) {
-                    $error = 'Token inválido';
-                } elseif ($data['expires'] < time()) {
-                    $error = 'Token expirou';
-                } else {
-                    $hash = password_hash($password, PASSWORD_BCRYPT);
-                    supabase('users?id=eq.' . $data['user_id'], 'PATCH', [
-                        'password' => $hash,
-                    ]);
-                    @unlink($tokenFile);
-                    $success = true;
-                }
-            }
+        if (empty($rows)) {
+            $error = 'Token inválido ou já utilizado';
         } else {
-            if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $error = 'Email inválido';
+            $data = json_decode($rows[0]['value'], true);
+            if (!$data) {
+                $error = 'Token inválido';
+            } elseif (strtotime($data['expires']) < time()) {
+                supabase('settings?key=eq.pwd_reset:' . $tokenHash, 'DELETE', []);
+                $error = 'Token expirou. Pede um novo.';
             } else {
-                $result = supabase('users?email=ilike.' . urlencode($email) . '&select=id');
-                if (!empty($result)) {
-                    $hash = password_hash($password, PASSWORD_BCRYPT);
-                    supabase('users?id=eq.' . $result[0]['id'], 'PATCH', [
-                        'password' => $hash,
-                    ]);
-                }
+                $hash = password_hash($password, PASSWORD_BCRYPT);
+                supabase('users?id=eq.' . $data['user_id'], 'PATCH', ['password' => $hash]);
+                supabase('settings?key=eq.pwd_reset:' . $tokenHash, 'DELETE', []);
                 $success = true;
             }
         }
     }
+}
+
+if (!$token) {
+    header('Location: index.php');
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -193,12 +183,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <?php endif; ?>
 
       <form method="POST">
-        <?php if (!$token): ?>
-          <div class="form-group">
-            <label class="label">Email</label>
-            <input type="email" name="email" class="input" required placeholder="email@exemplo.com"/>
-          </div>
-        <?php endif; ?>
         <div class="form-group">
           <label class="label">Nova Password</label>
           <input type="password" name="password" class="input" required placeholder="Mínimo 6 caracteres"/>
@@ -211,10 +195,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </form>
       <div class="link">
         <a href="index.php">← Voltar ao login</a>
-      </div>
-
-      <div class="link">
-        <a href="index.php">← Voltar</a>
       </div>
     <?php endif; ?>
   </div>

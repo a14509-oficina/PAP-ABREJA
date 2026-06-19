@@ -65,7 +65,7 @@ function showAuthForm(f){
 }
 document.getElementById('btn-toggle-auth').onclick=()=>showAuthForm('register-form');
 document.getElementById('btn-toggle-login').onclick=()=>showAuthForm('login-form');
-document.getElementById('btn-show-forgot').onclick=()=>window.location.href='reset_password.php';
+document.getElementById('btn-show-forgot').onclick=()=>showAuthForm('forgot-form');
 document.getElementById('btn-back-login').onclick=()=>showAuthForm('login-form');
 
 document.getElementById('auth-submit').onclick=async()=>{
