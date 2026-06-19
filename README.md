@@ -199,4 +199,4 @@ cmd = "php -S 0.0.0.0:$PORT"
 
 ## 📄 Licença
 
-Projeto académico — PAP 2025.
+Projeto académico — PAP 2026.
