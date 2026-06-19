@@ -66,9 +66,9 @@ startSession();
       <!-- Forgot -->
       <div id="forgot-form" class="hidden">
         <div class="auth-form-title">Recuperar Password</div>
-        <div class="auth-form-sub">Insere o teu email</div>
+        <div class="auth-form-sub">Insere o teu email para gerar um link de recuperação</div>
         <div id="forgot-err" class="auth-err hidden"></div>
-        <div id="forgot-ok" class="auth-ok hidden"></div>
+        <div id="forgot-ok" class="auth-ok hidden" style="font-size:.85rem;line-height:1.6;word-break:break-all"></div>
         <div class="form-group"><label class="label">Email</label><input id="inp-forgot-email" class="input" type="email" placeholder="email@exemplo.com"/></div>
         <button id="forgot-submit" class="btn btn-primary btn-full">Enviar Link</button>
         <div class="auth-toggle"><button id="btn-back-login">← Voltar ao login</button></div>
