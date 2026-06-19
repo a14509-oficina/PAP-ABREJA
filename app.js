@@ -419,7 +419,10 @@ function openGateDetail(gate){
   document.getElementById('modal-gate').classList.remove('hidden');
   loadGateLog(gate.id);
 }
-document.getElementById('btn-close-gate-modal').onclick=()=>document.getElementById('modal-gate').classList.add('hidden');
+document.getElementById('btn-close-gate-modal').onclick=()=>{
+  clearTimeout(gateLogTimer);
+  document.getElementById('modal-gate').classList.add('hidden');
+};
 
 // Modal tabs
 document.querySelectorAll('.modal-tab').forEach(tab=>{
@@ -438,6 +441,8 @@ document.querySelectorAll('.modal-tab').forEach(tab=>{
   };
 });
 
+let gateLogTimer = null;
+
 // ── Log ──
 async function loadGateLog(gateId){
   document.getElementById('mtab-log').innerHTML='<div class="skeleton" style="height:4rem;border-radius:.5rem;margin-top:.5rem"></div>';
@@ -445,6 +450,11 @@ async function loadGateLog(gateId){
     const rows=await api('GET',`api/gates.php?id=${gateId}&action=log`);
     if(!rows.length){document.getElementById('mtab-log').innerHTML='<p style="color:var(--muted);font-size:.85rem;padding:.5rem 0">Sem registos ainda.</p>';return;}
     document.getElementById('mtab-log').innerHTML=`<div style="background:var(--secondary);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:.5rem">${rows.map(r=>`<div class="log-item"><div class="log-icon">🔓</div><div class="log-info"><div>${r.users?.display_name||r.users?.email||r.plate||'Sistema'}</div><div class="log-time">${fmt(r.opened_at)} · ${r.method}${r.ip_address?' · '+r.ip_address:''}</div></div></div>`).join('')}</div>`;
+    // Auto-refresh a cada 10s enquanto o modal estiver aberto
+    clearTimeout(gateLogTimer);
+    if(!document.getElementById('modal-gate').classList.contains('hidden')){
+      gateLogTimer = setTimeout(() => loadGateLog(gateId), 10000);
+    }
   }catch(e){document.getElementById('mtab-log').innerHTML=`<p style="color:var(--destructive)">${e.message}</p>`;}
 }
 

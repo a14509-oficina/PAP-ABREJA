@@ -136,10 +136,31 @@ def processar_ocr(frame):
                     acionar_rele(f"AUTO:{plate}")
                     last_plate = plate
                     last_plate_time = agora
+                    # Registar acesso permitido
+                    try:
+                        car_id = check.json()[0]['id']
+                        requests.post(
+                            f"{SUPABASE_URL}/rest/v1/access_logs",
+                            headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json", "Prefer": "return=representation"},
+                            json={"gate_id": None, "plate": plate, "method": "plate", "user_id": None},
+                            timeout=5
+                        )
+                    except:
+                        pass
                 else:
                     status_msg = f"NEGADO: {plate}"
                     status_color = (0, 0, 255)
                     last_plate = plate
+                    # Registar acesso negado
+                    try:
+                        requests.post(
+                            f"{SUPABASE_URL}/rest/v1/access_logs",
+                            headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json", "Prefer": "return=representation"},
+                            json={"gate_id": None, "plate": plate, "method": "plate_denied", "user_id": None},
+                            timeout=5
+                        )
+                    except:
+                        pass
             else:
                 status_msg = "A AGUARDAR..."
                 status_color = (255, 255, 255)
