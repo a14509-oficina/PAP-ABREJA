@@ -98,9 +98,7 @@ document.getElementById('forgot-submit').onclick=async()=>{
   const btn=document.getElementById('forgot-submit'); btn.disabled=true;
   try{
     const res = await api('POST','api/auth.php?action=forgot',{email});
-    ok.innerHTML = 'Link de recuperação gerado:' +
-      `<br/><a href="${res.resetUrl}" style="color:var(--primary);word-break:break-all">${res.resetUrl}</a>` +
-      '<br/><br/><span style="font-size:.8rem;color:var(--muted)">Abre este link para redefinir a tua password.</span>';
+    ok.innerHTML = '✅ Email enviado!<br/><span style="font-size:.8rem;color:var(--muted)">Se o email existir, receberás um link para recuperar a password. Verifica também a pasta de spam.</span>';
     ok.classList.remove('hidden');
   }catch(e){err.textContent=e.message;err.classList.remove('hidden');}
   finally{btn.disabled=false;btn.textContent='Enviar Link';}

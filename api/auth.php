@@ -101,6 +101,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action === 'profile') {
     jsonResponse(['ok' => true]);
 }
 
+function sendResetEmail(string $to, string $resetUrl): bool {
+    $subject = '🔐 Recuperar Password — Abre Já';
+    $html = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+        body{font-family:sans-serif;background:#0d0f14;color:#e8eaed;padding:2rem}
+        .box{max-width:480px;margin:auto;background:#171a21;border:1px solid #2a2e35;border-radius:12px;padding:2rem}
+        h1{font-size:1.2rem;margin:0 0 .5rem;color:#e53935}
+        p{color:#9aa0a6;line-height:1.6;font-size:.9rem}
+        .btn{display:inline-block;background:#e53935;color:#fff;text-decoration:none;padding:.75rem 1.5rem;border-radius:8px;font-weight:600;font-size:.85rem;margin:1.5rem 0}
+        .btn:hover{opacity:.85}
+        .footer{font-size:.75rem;color:#5f6368;margin-top:1.5rem}
+    </style></head><body>
+    <div class="box">
+        <h1>🔐 Recuperar Password</h1>
+        <p>Recebeste este email porque pediste para recuperar a tua password no <strong>Abre Já</strong>.</p>
+        <p>Clica no botão abaixo para escolher uma nova password. Este link expira em <strong>1 hora</strong>.</p>
+        <a class="btn" href="' . $resetUrl . '">Redefinir Password</a>
+        <p style="font-size:.8rem;word-break:break-all">Se o botão não funcionar, copia este link:<br><span style="color:#e53935">' . $resetUrl . '</span></p>
+        <div class="footer">Se não pediste esta recuperação, ignora este email.</div>
+    </div></body></html>';
+
+    $ch = curl_init('https://api.sendgrid.com/v3/mail/send');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . SENDGRID_API_KEY,
+            'Content-Type: application/json',
+        ],
+        CURLOPT_POSTFIELDS => json_encode([
+            'personalizations' => [['to' => [['email' => $to]]]],
+            'from' => ['email' => SENDGRID_FROM_EMAIL, 'name' => SENDGRID_FROM_NAME],
+            'subject' => $subject,
+            'content' => [['type' => 'text/html', 'value' => $html]],
+        ]),
+    ]);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    return $httpCode >= 200 && $httpCode < 300;
+}
+
 // POST ?action=forgot
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'forgot') {
     $body  = getBody();
@@ -124,8 +164,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'forgot') {
         ]),
     ]);
 
-    $resetUrl = 'reset_password.php?token=' . urlencode($token);
-    jsonResponse(['ok' => true, 'resetUrl' => $resetUrl], 200);
+    $baseUrl = APP_URL ?: (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+    $resetUrl = $baseUrl . '/reset_password.php?token=' . urlencode($token);
+
+    sendResetEmail($user['email'], $resetUrl);
+    jsonResponse(['ok' => true], 200);
 }
 
 // POST ?action=reset
