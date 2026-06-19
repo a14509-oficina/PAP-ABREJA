@@ -60,6 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
 
     if (!$email || !$password) jsonResponse(['error' => 'Email e password são obrigatórios'], 400);
 
+    $ip = clientIp();
+    if (!checkRateLimit('login', $ip)) {
+        logError('Login rate limit', ['email' => $email, 'ip' => $ip]);
+        jsonResponse(['error' => 'Demasiadas tentativas. Tenta novamente mais tarde.'], 429);
+    }
+
     $result = supabase('users?email=ilike.' . urlencode($email) . '&select=*');
     if (empty($result)) jsonResponse(['error' => 'Email ou password incorretos'], 401);
 
@@ -146,6 +152,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'forgot') {
     $body  = getBody();
     $email = strtolower(trim($body['email'] ?? ''));
     if (!$email) jsonResponse(['error' => 'Email obrigatório'], 400);
+
+    $ip = clientIp();
+    if (!checkRateLimit('forgot', $ip, 3, 300)) {
+        logError('Forgot rate limit', ['email' => $email, 'ip' => $ip]);
+        jsonResponse(['error' => 'Demasiados pedidos. Tenta novamente mais tarde.'], 429);
+    }
 
     $result = supabase('users?email=ilike.' . urlencode($email) . '&select=id,email');
     if (empty($result)) { jsonResponse(['ok' => true], 200); }

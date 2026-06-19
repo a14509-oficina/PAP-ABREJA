@@ -117,6 +117,12 @@ async function doLogout(){
 document.getElementById('btn-logout').onclick=doLogout;
 document.getElementById('btn-logout-profile').onclick=doLogout;
 
+// ════ SEARCH ════
+document.getElementById('car-search').addEventListener('input', e => {
+  carSearchTerm = e.target.value;
+  renderCars();
+});
+
 // ════ TABS ════
 document.querySelectorAll('.nav-tab').forEach(tab=>{
   tab.onclick=()=>{
@@ -259,13 +265,17 @@ document.getElementById('btn-car-submit').onclick=async()=>{
   }catch(e){toast('Erro',e.message,'error');}
   finally{btn.disabled=false;}
 };
+let carSearchTerm = '';
 function renderCars(){
   const list=document.getElementById('cars-list');
   const empty=document.getElementById('cars-empty');
-  document.getElementById('car-count-lbl').textContent=`${cars.length} ${cars.length===1?'veículo':'veículos'}`;
-  if(!cars.length){list.innerHTML='';empty.classList.remove('hidden');return;}
+  const filtered = carSearchTerm
+    ? cars.filter(c => (c.plate+' '+c.brand+' '+(c.color||'')).toLowerCase().includes(carSearchTerm.toLowerCase()))
+    : cars;
+  document.getElementById('car-count-lbl').textContent=`${filtered.length} ${filtered.length===1?'veículo':'veículos'}`;
+  if(!filtered.length){list.innerHTML='';empty.classList.remove('hidden');return;}
   empty.classList.add('hidden');
-  list.innerHTML=cars.map(car=>{
+  list.innerHTML=filtered.map(car=>{
     const logo=getBrandLogo(car.brand);
     const colorName=CAR_COLORS.find(c=>c.value===car.color)?.name||'Personalizada';
     const imageSrc = car.image_url || logo;

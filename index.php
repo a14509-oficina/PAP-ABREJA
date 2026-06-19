@@ -106,7 +106,10 @@ startSession();
     <div id="tab-cars">
       <div class="section-header">
         <span id="car-count-lbl" class="section-title-text">—</span>
-        <button id="btn-add-car" class="btn btn-primary btn-sm">+ Adicionar</button>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <input id="car-search" class="input" type="text" placeholder="🔍 Pesquisar..." style="width:10rem;padding:.35rem .6rem;font-size:.8rem;background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius) - 4px);color:var(--fg);outline:none"/>
+          <button id="btn-add-car" class="btn btn-primary btn-sm">+ Adicionar</button>
+        </div>
       </div>
       <div id="car-form-wrapper" class="form-card hidden">
         <div class="form-header"><h3 id="car-form-title">Novo Carro</h3><button class="close-btn" id="btn-close-car-form"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
