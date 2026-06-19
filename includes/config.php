@@ -15,6 +15,7 @@ loadEnv(__DIR__ . '/../.env');
 define('SUPABASE_URL', getenv('SUPABASE_URL') ?: 'https://nknpvvkvrbepwakhzefj.supabase.co');
 define('SUPABASE_ANON_KEY', getenv('SUPABASE_ANON_KEY') ?: '');
 define('SUPABASE_PUBLISHABLE_KEY', getenv('SUPABASE_PUBLISHABLE_KEY') ?: '');
+define('SUPABASE_KEY', getenv('SUPABASE_SERVICE_KEY') ?: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbnB2dmt2cmJlcHdha2h6ZWZqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTU0ODk5MywiZXhwIjoyMDk3MTI0OTkzfQ.CQ_HcW0f4TxtLCdqH7mMJxEcJeVM0g_3hRA8zehgEOc');
 define('SENDGRID_API_KEY', getenv('SENDGRID_API_KEY') ?: '');
 define('SENDGRID_FROM_EMAIL', 'abreja030@gmail.com');
 define('SENDGRID_FROM_NAME', 'Abre Já');
