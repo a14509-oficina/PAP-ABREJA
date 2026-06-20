@@ -134,9 +134,27 @@ if ($method === 'DELETE' && $id && !$action) {
 
 // ── POST action=open: abrir portão ────────────────────────────────────────
 if ($method === 'POST' && $id && $action === 'open') {
-    $existing = supabase('gates?id=eq.' . urlencode($id) . '&select=id');
+    $existing = supabase('gates?id=eq.' . urlencode($id) . '&select=id,user_id');
     if (empty($existing)) {
         jsonResponse(['error' => 'Portão não encontrado'], 404);
+    }
+
+    $gate = $existing[0];
+    $isOwner = $gate['user_id'] === $userId;
+    $isAdmin = !empty($user['isAdmin']);
+
+    if (!$isOwner && !$isAdmin) {
+        $shared = supabase('gate_shares?gate_id=eq.' . urlencode($id) . '&user_id=eq.' . urlencode($userId) . '&select=id,expires_at');
+        $hasAccess = false;
+        foreach ($shared as $s) {
+            if (empty($s['expires_at']) || strtotime($s['expires_at']) > time()) {
+                $hasAccess = true;
+                break;
+            }
+        }
+        if (!$hasAccess) {
+            jsonResponse(['error' => 'Sem permissão para abrir este portão'], 403);
+        }
     }
 
     supabase('open_requests', 'POST', [

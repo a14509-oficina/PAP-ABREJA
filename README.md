@@ -134,6 +134,15 @@ CREATE TABLE admin_logs (
   detail TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE TABLE open_requests (
+  id BIGSERIAL PRIMARY KEY,
+  gate_id BIGINT REFERENCES gates(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  status TEXT DEFAULT 'pending',
+  source TEXT DEFAULT 'app',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 ```
 </details>
 

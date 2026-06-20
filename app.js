@@ -122,8 +122,16 @@ document.getElementById('car-search').addEventListener('input', e => {
   carSearchTerm = e.target.value;
   renderCars();
 });
+document.getElementById('car-sort').addEventListener('change', e => {
+  carSortBy = e.target.value;
+  renderCars();
+});
 document.getElementById('gate-search').addEventListener('input', e => {
   gateSearchTerm = e.target.value;
+  renderGates();
+});
+document.getElementById('gate-sort').addEventListener('change', e => {
+  gateSortBy = e.target.value;
   renderGates();
 });
 
@@ -270,12 +278,16 @@ document.getElementById('btn-car-submit').onclick=async()=>{
   finally{btn.disabled=false;}
 };
 let carSearchTerm = '';
+let carSortBy = 'date';
 function renderCars(){
   const list=document.getElementById('cars-list');
   const empty=document.getElementById('cars-empty');
-  const filtered = carSearchTerm
+  let filtered = carSearchTerm
     ? cars.filter(c => (c.plate+' '+c.brand+' '+(c.color||'')).toLowerCase().includes(carSearchTerm.toLowerCase()))
-    : cars;
+    : [...cars];
+  if(carSortBy==='plate') filtered.sort((a,b)=>a.plate.localeCompare(b.plate));
+  else if(carSortBy==='brand') filtered.sort((a,b)=>a.brand.localeCompare(b.brand));
+  else filtered.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
   document.getElementById('car-count-lbl').textContent=`${filtered.length} ${filtered.length===1?'veículo':'veículos'}`;
   if(!filtered.length){list.innerHTML='';empty.classList.remove('hidden');return;}
   empty.classList.add('hidden');
@@ -368,9 +380,11 @@ async function openGate(id,name,icon){
 function renderGates(){
   const list=document.getElementById('gates-list');
   const empty=document.getElementById('gates-empty');
-  const filtered = gateSearchTerm
+  let filtered = gateSearchTerm
     ? gates.filter(g => (g.name+' '+(g.relay_id||'')).toLowerCase().includes(gateSearchTerm.toLowerCase()))
-    : gates;
+    : [...gates];
+  if(gateSortBy==='name') filtered.sort((a,b)=>a.name.localeCompare(b.name));
+  else filtered.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
   document.getElementById('gate-count-lbl').textContent=`${filtered.length} ${filtered.length===1?'portão':'portões'}`;
   if(!filtered.length){list.innerHTML='';empty.classList.remove('hidden');return;}
   empty.classList.add('hidden');
@@ -450,6 +464,7 @@ document.querySelectorAll('.modal-tab').forEach(tab=>{
 
 let gateLogTimer = null;
 let gateSearchTerm = '';
+let gateSortBy = 'name';
 let gateLogOffset = 0;
 const GATE_LOG_PAGE = 30;
 

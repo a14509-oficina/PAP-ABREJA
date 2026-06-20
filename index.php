@@ -107,7 +107,12 @@ startSession();
       <div class="section-header">
         <span id="car-count-lbl" class="section-title-text">—</span>
         <div style="display:flex;gap:.5rem;align-items:center">
-          <input id="car-search" class="input" type="text" placeholder="🔍 Pesquisar..." style="width:10rem;padding:.35rem .6rem;font-size:.8rem;background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius) - 4px);color:var(--fg);outline:none"/>
+          <input id="car-search" class="input" type="text" placeholder="🔍 Pesquisar..." style="width:8rem;padding:.35rem .6rem;font-size:.8rem;background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius) - 4px);color:var(--fg);outline:none"/>
+          <select id="car-sort" class="input" style="width:7rem;padding:.35rem .6rem;font-size:.8rem;background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius) - 4px);color:var(--fg);outline:none;cursor:pointer">
+            <option value="date">Mais recentes</option>
+            <option value="plate">Matrícula</option>
+            <option value="brand">Marca</option>
+          </select>
           <button id="btn-add-car" class="btn btn-primary btn-sm">+ Adicionar</button>
         </div>
       </div>
@@ -137,7 +142,11 @@ startSession();
       <div class="section-header">
         <span id="gate-count-lbl" class="section-title-text">—</span>
         <div style="display:flex;gap:.5rem;align-items:center">
-          <input id="gate-search" class="input" type="text" placeholder="🔍 Pesquisar..." style="width:10rem;padding:.35rem .6rem;font-size:.8rem;background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius) - 4px);color:var(--fg);outline:none"/>
+          <input id="gate-search" class="input" type="text" placeholder="🔍 Pesquisar..." style="width:8rem;padding:.35rem .6rem;font-size:.8rem;background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius) - 4px);color:var(--fg);outline:none"/>
+          <select id="gate-sort" class="input" style="width:7rem;padding:.35rem .6rem;font-size:.8rem;background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius) - 4px);color:var(--fg);outline:none;cursor:pointer">
+            <option value="name">Nome</option>
+            <option value="date">Mais recentes</option>
+          </select>
           <button id="btn-add-gate" class="btn btn-primary btn-sm">+ Novo Portão</button>
         </div>
       </div>
