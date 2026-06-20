@@ -38,7 +38,7 @@ startSession();
       <div style="font-family:var(--font-d);font-size:2rem;font-weight:700;line-height:1.2;margin-bottom:1rem">Os teus portões,<br/><span style="color:var(--primary)">sempre contigo.</span></div>
       <div style="color:var(--muted);line-height:1.7">Gere portões e carros num só lugar.</div>
     </div>
-    <div style="font-size:.7rem;color:var(--muted)">© 2026 Abre Já</div>
+    <div style="font-size:.7rem;color:var(--muted)">© 2026 Abre Já · <a href="privacidade.php" style="color:var(--muted);text-decoration:underline">Privacidade</a></div>
   </div>
   <div class="auth-form-panel">
     <div class="auth-form-inner">
