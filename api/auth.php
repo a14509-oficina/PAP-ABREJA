@@ -55,18 +55,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'register') {
 // POST ?action=login
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
     $body     = getBody();
-    $email    = strtolower(trim($body['email'] ?? ''));
+    $login    = strtolower(trim($body['email'] ?? ''));
     $password = $body['password'] ?? '';
 
-    if (!$email || !$password) jsonResponse(['error' => 'Email e password são obrigatórios'], 400);
+    if (!$login || !$password) jsonResponse(['error' => 'Email/username e password são obrigatórios'], 400);
 
     $ip = clientIp();
     if (!checkRateLimit('login', $ip)) {
-        logError('Login rate limit', ['email' => $email, 'ip' => $ip]);
+        logError('Login rate limit', ['login' => $login, 'ip' => $ip]);
         jsonResponse(['error' => 'Demasiadas tentativas. Tenta novamente mais tarde.'], 429);
     }
 
-    $result = supabase('users?email=ilike.' . urlencode($email) . '&select=*');
+    $result = supabase('users?or=(email.ilike.' . urlencode($login) . ',name.ilike.' . urlencode($login) . ')&select=*');
     if (empty($result)) jsonResponse(['error' => 'Email ou password incorretos'], 401);
 
     $row = $result[0];

@@ -47,7 +47,7 @@ startSession();
         <div class="auth-form-title">Entrar</div>
         <div class="auth-form-sub">Acede à tua conta</div>
         <div id="login-err" class="auth-err hidden"></div>
-        <div class="form-group"><label class="label">Email</label><input id="inp-email" class="input" type="email" placeholder="email@exemplo.com"/></div>
+        <div class="form-group"><label class="label">Email / Nome de Utilizador</label><input id="inp-email" class="input" type="text" placeholder="email@exemplo.com ou nome"/></div>
         <div class="form-group"><label class="label">Password</label><input id="inp-password" class="input" type="password" placeholder="••••••••"/><span class="forgot-link" id="btn-show-forgot">Esqueceste a password?</span></div>
         <button id="auth-submit" class="btn btn-primary btn-full">Entrar</button>
         <div class="auth-toggle">Não tens conta? <button id="btn-toggle-auth">Registar</button></div>
