@@ -71,10 +71,11 @@ document.getElementById('btn-back-login').onclick=()=>showAuthForm('login-form')
 document.getElementById('auth-submit').onclick=async()=>{
   const email=document.getElementById('inp-email').value.trim();
   const pw=document.getElementById('inp-password').value;
+  const remember=document.getElementById('inp-remember').checked;
   const err=document.getElementById('login-err'); err.classList.add('hidden');
   const btn=document.getElementById('auth-submit'); btn.disabled=true; btn.textContent='A entrar...';
   try{
-    currentUser=await api('POST','api/auth.php?action=login',{email,password:pw});
+    currentUser=await api('POST','api/auth.php?action=login',{email,password:pw,remember});
     await loadAll(); showPage('app');
   }catch(e){err.textContent=e.message;err.classList.remove('hidden');}
   finally{btn.disabled=false;btn.textContent='Entrar';}

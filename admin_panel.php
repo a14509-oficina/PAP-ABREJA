@@ -440,7 +440,8 @@ $user = $_SESSION['admin_user'] ?? null;
         const rows = await api('GET', `api/admin.php?action=logs&limit=${LOG_PAGE}&offset=0`);
         const wrap = document.getElementById('adminlog-wrap');
         if(!rows.length){ wrap.innerHTML='<p style="color:var(--muted);padding:1rem">Sem acessos registados.</p>'; return; }
-        wrap.innerHTML = `<div class="card" style="padding:0;overflow:hidden" id="log-list">` + renderLogItems(rows) + `</div>`;
+        wrap.innerHTML = `<div style="display:flex;justify-content:flex-end;gap:.5rem;margin-bottom:.5rem"><a href="api/admin.php?action=export-logs" class="btn btn-ghost btn-sm" target="_blank">📥 Exportar CSV</a></div>`;
+        wrap.innerHTML += `<div class="card" style="padding:0;overflow:hidden" id="log-list">` + renderLogItems(rows) + `</div>`;
         if(rows.length >= LOG_PAGE) {
           wrap.innerHTML += `<div style="text-align:center;padding:.75rem"><button class="btn btn-ghost btn-sm" id="btn-load-more-logs">+ Carregar mais</button></div>`;
           document.getElementById('btn-load-more-logs').onclick = loadMoreLogs;

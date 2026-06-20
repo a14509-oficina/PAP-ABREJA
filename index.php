@@ -49,6 +49,10 @@ startSession();
         <div id="login-err" class="auth-err hidden"></div>
         <div class="form-group"><label class="label">Email / Nome de Utilizador</label><input id="inp-email" class="input" type="text" placeholder="email@exemplo.com ou nome"/></div>
         <div class="form-group"><label class="label">Password</label><input id="inp-password" class="input" type="password" placeholder="••••••••"/><span class="forgot-link" id="btn-show-forgot">Esqueceste a password?</span></div>
+        <div class="form-group" style="display:flex;align-items:center;gap:.5rem;margin-top:-.5rem">
+          <input type="checkbox" id="inp-remember" style="accent-color:var(--primary);width:1rem;height:1rem;cursor:pointer"/>
+          <label for="inp-remember" style="color:var(--muted);font-size:.85rem;cursor:pointer">Manter sessão</label>
+        </div>
         <button id="auth-submit" class="btn btn-primary btn-full">Entrar</button>
         <div class="auth-toggle">Não tens conta? <button id="btn-toggle-auth">Registar</button></div>
       </div>

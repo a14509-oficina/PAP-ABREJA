@@ -83,7 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
     if (!empty($blocked)) jsonResponse(['error' => 'Conta bloqueada'], 403);
 
     $userData = rowToUser($row);
-    setLoggedUser($userData);
+    $remember = !empty($body['remember']);
+    setLoggedUser($userData, $remember);
     jsonResponse($userData);
 }
 

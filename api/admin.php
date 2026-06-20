@@ -175,6 +175,24 @@ switch ($action) {
         }
         jsonResponse(['error' => 'Método não suportado'], 405);
 
+    // ── Exportar logs para CSV ───────────────────────────────────────────────
+    case 'export-logs':
+        $rows = supabase('access_logs?order=created_at.desc&limit=5000&select=*');
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="logs-abreja.csv"');
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Data', 'Matrícula', 'Método', 'User ID']);
+        foreach ($rows as $r) {
+            fputcsv($out, [
+                $r['created_at'] ?? '',
+                $r['plate'] ?? '',
+                $r['method'] ?? '',
+                $r['user_id'] ?? '',
+            ]);
+        }
+        fclose($out);
+        exit;
+
     default:
         jsonResponse(['error' => 'Ação inválida: ' . $action], 404);
 }
