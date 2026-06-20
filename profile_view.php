@@ -1,11 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/helpers.php';
 
-session_start();
-
-if (!isset($_SESSION['admin_user'])) {
-    header('Location: admin_panel.php');
+$currentUser = getLoggedUser();
+if (!$currentUser || empty($currentUser['isAdmin'])) {
+    header('Location: index.php');
     exit;
 }
 

@@ -59,9 +59,11 @@ switch ($action) {
     // ── Log de ações administrativas ──────────────────────────────────────────
     case 'logs':
         $userId = $_GET['user_id'] ?? '';
+        $offset = max(0, (int)($_GET['offset'] ?? 0));
+        $limit  = min(200, max(1, (int)($_GET['limit'] ?? 100)));
         $filter = $userId
-            ? 'access_logs?user_id=eq.' . urlencode($userId) . '&order=created_at.desc&limit=50&select=*'
-            : 'access_logs?order=created_at.desc&limit=100&select=*';
+            ? 'access_logs?user_id=eq.' . urlencode($userId) . "&order=created_at.desc&limit=$limit&offset=$offset&select=*"
+            : "access_logs?order=created_at.desc&limit=$limit&offset=$offset&select=*";
         $rows = supabase($filter);
         $rows = array_map(function ($r) {
             $r['opened_at'] = $r['created_at'] ?? null;

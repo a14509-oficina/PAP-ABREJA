@@ -158,7 +158,9 @@ if ($method === 'POST' && $id && $action === 'open') {
 
 // ── GET action=log: histórico de acessos ──────────────────────────────────
 if ($method === 'GET' && $id && $action === 'log') {
-    $rows = supabase('access_logs?gate_id=eq.' . urlencode($id) . '&select=*,users:user_id(email,display_name)&order=created_at.desc&limit=50');
+    $offset = max(0, (int)($_GET['offset'] ?? 0));
+    $limit  = min(200, max(1, (int)($_GET['limit'] ?? 50)));
+    $rows = supabase('access_logs?gate_id=eq.' . urlencode($id) . "&select=*,users:user_id(email,display_name)&order=created_at.desc&limit=$limit&offset=$offset");
     $rows = array_map(function ($r) {
         $r['opened_at'] = $r['created_at'] ?? null;
         return $r;

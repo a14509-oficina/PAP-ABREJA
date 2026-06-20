@@ -122,6 +122,10 @@ document.getElementById('car-search').addEventListener('input', e => {
   carSearchTerm = e.target.value;
   renderCars();
 });
+document.getElementById('gate-search').addEventListener('input', e => {
+  gateSearchTerm = e.target.value;
+  renderGates();
+});
 
 // ════ TABS ════
 document.querySelectorAll('.nav-tab').forEach(tab=>{
@@ -364,10 +368,13 @@ async function openGate(id,name,icon){
 function renderGates(){
   const list=document.getElementById('gates-list');
   const empty=document.getElementById('gates-empty');
-  document.getElementById('gate-count-lbl').textContent=`${gates.length} ${gates.length===1?'portão':'portões'}`;
-  if(!gates.length){list.innerHTML='';empty.classList.remove('hidden');return;}
+  const filtered = gateSearchTerm
+    ? gates.filter(g => (g.name+' '+(g.relay_id||'')).toLowerCase().includes(gateSearchTerm.toLowerCase()))
+    : gates;
+  document.getElementById('gate-count-lbl').textContent=`${filtered.length} ${filtered.length===1?'portão':'portões'}`;
+  if(!filtered.length){list.innerHTML='';empty.classList.remove('hidden');return;}
   empty.classList.add('hidden');
-  list.innerHTML=gates.map(gate=>{
+  list.innerHTML=filtered.map(gate=>{
     const owner = gate.users ? (gate.users.display_name || gate.users.email) : null;
     const ownerLabel = owner ? `<div class="gate-owner">${gate.user_id===currentUser?.id ? 'Meu portão' : 'Proprietário: ' + owner}</div>` : '';
     return `
@@ -442,19 +449,37 @@ document.querySelectorAll('.modal-tab').forEach(tab=>{
 });
 
 let gateLogTimer = null;
+let gateSearchTerm = '';
+let gateLogOffset = 0;
+const GATE_LOG_PAGE = 30;
 
 // ── Log ──
 async function loadGateLog(gateId){
+  gateLogOffset = 0;
   document.getElementById('mtab-log').innerHTML='<div class="skeleton" style="height:4rem;border-radius:.5rem;margin-top:.5rem"></div>';
   try{
-    const rows=await api('GET',`api/gates.php?id=${gateId}&action=log`);
+    const rows=await api('GET',`api/gates.php?id=${gateId}&action=log&limit=${GATE_LOG_PAGE}&offset=0`);
     if(!rows.length){document.getElementById('mtab-log').innerHTML='<p style="color:var(--muted);font-size:.85rem;padding:.5rem 0">Sem registos ainda.</p>';return;}
-    document.getElementById('mtab-log').innerHTML=`<div style="background:var(--secondary);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:.5rem">${rows.map(r=>`<div class="log-item"><div class="log-icon">🔓</div><div class="log-info"><div>${r.users?.display_name||r.users?.email||r.plate||'Sistema'}</div><div class="log-time">${fmt(r.opened_at)} · ${r.method}${r.ip_address?' · '+r.ip_address:''}</div></div></div>`).join('')}</div>`;
-    // Auto-refresh a cada 10s enquanto o modal estiver aberto
+    let html = `<div style="background:var(--secondary);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:.5rem" id="gate-log-list">${rows.map(r=>`<div class="log-item"><div class="log-icon">🔓</div><div class="log-info"><div>${r.users?.display_name||r.users?.email||r.plate||'Sistema'}</div><div class="log-time">${fmt(r.opened_at)} · ${r.method}${r.ip_address?' · '+r.ip_address:''}</div></div></div>`).join('')}</div>`;
+    if(rows.length >= GATE_LOG_PAGE) {
+      html += `<div style="text-align:center;padding:.5rem 0"><button class="btn btn-ghost btn-sm" id="btn-more-gate-log">+ Carregar mais</button></div>`;
+    }
+    document.getElementById('mtab-log').innerHTML = html;
+    document.getElementById('btn-more-gate-log')?.addEventListener('click', () => loadMoreGateLog(gateId));
     clearTimeout(gateLogTimer);
     if(!document.getElementById('modal-gate').classList.contains('hidden')){
       gateLogTimer = setTimeout(() => loadGateLog(gateId), 10000);
     }
+  }catch(e){document.getElementById('mtab-log').innerHTML=`<p style="color:var(--destructive)">${e.message}</p>`;}
+}
+
+async function loadMoreGateLog(gateId){
+  try{
+    gateLogOffset += GATE_LOG_PAGE;
+    const rows=await api('GET',`api/gates.php?id=${gateId}&action=log&limit=${GATE_LOG_PAGE}&offset=${gateLogOffset}`);
+    if(!rows.length){document.getElementById('btn-more-gate-log')?.remove();return;}
+    document.getElementById('gate-log-list').innerHTML += rows.map(r=>`<div class="log-item"><div class="log-icon">🔓</div><div class="log-info"><div>${r.users?.display_name||r.users?.email||r.plate||'Sistema'}</div><div class="log-time">${fmt(r.opened_at)} · ${r.method}${r.ip_address?' · '+r.ip_address:''}</div></div></div>`).join('');
+    if(rows.length < GATE_LOG_PAGE) document.getElementById('btn-more-gate-log')?.remove();
   }catch(e){document.getElementById('mtab-log').innerHTML=`<p style="color:var(--destructive)">${e.message}</p>`;}
 }
 

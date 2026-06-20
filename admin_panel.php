@@ -413,30 +413,51 @@ $user = $_SESSION['admin_user'] ?? null;
     }
 
     // Logs de Acesso (câmara + app)
+    let logOffset = 0;
+    const LOG_PAGE = 50;
+
+    function renderLogItems(rows) {
+      return rows.map(r => {
+        const isDenied = r.method === 'plate_denied';
+        const isApp    = r.method === 'app';
+        const icon     = isDenied ? '🚫' : (isApp ? '📱' : '📷');
+        const color    = isDenied ? 'var(--primary)' : 'var(--success)';
+        const label    = isDenied ? 'Negado' : (isApp ? 'App' : 'Câmara');
+        const plate    = r.plate ? `<span style="font-family:var(--font-d);font-size:.78rem;background:var(--secondary);padding:.15rem .45rem;border-radius:.25rem;border:1px solid var(--border)">${r.plate}</span>` : '<span style="color:var(--muted);font-size:.8rem">sem matrícula</span>';
+        return `<div class="log-item">
+          <div class="log-icon" style="background:${isDenied?'hsl(0 85% 55%/.1)':'hsl(142 70% 45%/.1)'}">${icon}</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:.5rem">${plate} <span style="font-size:.7rem;color:${color};font-weight:600">${label}</span></div>
+            <div class="log-time">${fmt(r.opened_at)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
     async function loadLogs() {
       try {
-        const rows = await api('GET', 'api/admin.php?action=logs');
+        logOffset = 0;
+        const rows = await api('GET', `api/admin.php?action=logs&limit=${LOG_PAGE}&offset=0`);
         const wrap = document.getElementById('adminlog-wrap');
         if(!rows.length){ wrap.innerHTML='<p style="color:var(--muted);padding:1rem">Sem acessos registados.</p>'; return; }
-        wrap.innerHTML = `<div class="card" style="padding:0;overflow:hidden">` + rows.map(r => {
-          const isDenied = r.method === 'plate_denied';
-          const isApp    = r.method === 'app';
-          const icon     = isDenied ? '🚫' : (isApp ? '📱' : '📷');
-          const color    = isDenied ? 'var(--primary)' : 'var(--success)';
-          const label    = isDenied ? 'Negado' : (isApp ? 'App' : 'Câmara');
-          const plate    = r.plate ? `<span style="font-family:var(--font-d);font-size:.78rem;background:var(--secondary);padding:.15rem .45rem;border-radius:.25rem;border:1px solid var(--border)">${r.plate}</span>` : '<span style="color:var(--muted);font-size:.8rem">sem matrícula</span>';
-          return `<div class="log-item">
-            <div class="log-icon" style="background:${isDenied?'hsl(0 85% 55%/.1)':'hsl(142 70% 45%/.1)'}">${icon}</div>
-            <div style="flex:1">
-              <div style="display:flex;align-items:center;gap:.5rem">${plate} <span style="font-size:.7rem;color:${color};font-weight:600">${label}</span></div>
-              <div class="log-time">${fmt(r.opened_at)}</div>
-            </div>
-          </div>`;
-        }).join('') + `</div>`;
-        // Auto-refresh a cada 15s
+        wrap.innerHTML = `<div class="card" style="padding:0;overflow:hidden" id="log-list">` + renderLogItems(rows) + `</div>`;
+        if(rows.length >= LOG_PAGE) {
+          wrap.innerHTML += `<div style="text-align:center;padding:.75rem"><button class="btn btn-ghost btn-sm" id="btn-load-more-logs">+ Carregar mais</button></div>`;
+          document.getElementById('btn-load-more-logs').onclick = loadMoreLogs;
+        }
         clearTimeout(window._logTimer);
         window._logTimer = setTimeout(loadLogs, 15000);
       } catch(e){ document.getElementById('adminlog-wrap').innerHTML=`<p style="color:var(--destructive);padding:1rem">${e.message}</p>`; }
+    }
+
+    async function loadMoreLogs() {
+      try {
+        logOffset += LOG_PAGE;
+        const rows = await api('GET', `api/admin.php?action=logs&limit=${LOG_PAGE}&offset=${logOffset}`);
+        if(!rows.length) { document.getElementById('btn-load-more-logs')?.remove(); return; }
+        document.getElementById('log-list').innerHTML += renderLogItems(rows);
+        if(rows.length < LOG_PAGE) document.getElementById('btn-load-more-logs')?.remove();
+      } catch(e){ toast('Erro', e.message, 'error'); }
     }
 
     async function loadAdminLog() {

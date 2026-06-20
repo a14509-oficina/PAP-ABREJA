@@ -136,7 +136,10 @@ startSession();
     <div id="tab-gates" class="hidden">
       <div class="section-header">
         <span id="gate-count-lbl" class="section-title-text">—</span>
-        <button id="btn-add-gate" class="btn btn-primary btn-sm">+ Novo Portão</button>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <input id="gate-search" class="input" type="text" placeholder="🔍 Pesquisar..." style="width:10rem;padding:.35rem .6rem;font-size:.8rem;background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius) - 4px);color:var(--fg);outline:none"/>
+          <button id="btn-add-gate" class="btn btn-primary btn-sm">+ Novo Portão</button>
+        </div>
       </div>
       <div id="gate-form-wrapper" class="form-card hidden">
         <div class="form-header"><h3 id="gate-form-title">Novo Portão</h3><button class="close-btn" id="btn-close-gate-form"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
