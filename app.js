@@ -261,13 +261,19 @@ function openCarForm(car){
   document.getElementById('inp-plate').focus();
 }
 function closeCarForm(){editingCarId=null;document.getElementById('car-form-wrapper').classList.add('hidden');document.getElementById('btn-add-car').classList.remove('hidden');renderCars();}
-document.getElementById('inp-plate').oninput=e=>{e.target.value=e.target.value.replace(/[^a-zA-Z0-9-]/g,'').toUpperCase();document.getElementById('plate-count').textContent=e.target.value.length;};
+document.getElementById('inp-plate').oninput=e=>{
+  let v=e.target.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase().slice(0,6);
+  if(v.length>2) v=v.slice(0,2)+'-'+v.slice(2);
+  if(v.length>5) v=v.slice(0,5)+'-'+v.slice(5);
+  e.target.value=v;
+  document.getElementById('plate-count').textContent=v.length;
+};
 document.getElementById('btn-add-car').onclick=()=>openCarForm(null);
 document.getElementById('btn-add-car-empty').onclick=()=>openCarForm(null);
 document.getElementById('btn-close-car-form').onclick=closeCarForm;
 document.getElementById('btn-car-submit').onclick=async()=>{
   const plate=document.getElementById('inp-plate').value.trim().toUpperCase();
-  if(!plate||plate.length>8){toast('Matrícula inválida','Máx. 8 caracteres','error');return;}
+  if(!plate||!plate.match(/^[A-Z0-9]{2}-[A-Z0-9]{2}-[A-Z0-9]{2}$/)){toast('Matrícula inválida','Formato: AA-00-AA ou 00-00-AA','error');return;}
   if(!selectedBrand){toast('Marca obrigatória','','error');return;}
   const btn=document.getElementById('btn-car-submit'); btn.disabled=true;
   try{

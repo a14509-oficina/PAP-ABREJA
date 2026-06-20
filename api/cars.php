@@ -33,6 +33,9 @@ if ($method === 'POST' && !$id) {
     $ownerId = $isAdmin ? ($body['user_id'] ?? $userId) : $userId;
 
     if (!$plate) jsonResponse(['error' => 'Matrícula obrigatória'], 400);
+    if (!preg_match('/^[A-Z0-9]{2}-[A-Z0-9]{2}-[A-Z0-9]{2}$/', $plate)) {
+        jsonResponse(['error' => 'Matrícula inválida. Formato: AA-00-AA'], 400);
+    }
 
     // Verificar duplicado
     $exists = supabase('cars?plate=eq.' . urlencode($plate) . '&select=id');

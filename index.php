@@ -122,7 +122,7 @@ startSession();
       </div>
       <div id="car-form-wrapper" class="form-card hidden">
         <div class="form-header"><h3 id="car-form-title">Novo Carro</h3><button class="close-btn" id="btn-close-car-form"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-        <div class="form-group"><label class="label">Matrícula</label><input id="inp-plate" class="input input-plate" type="text" placeholder="AA-00-AA" maxlength="8"/><div class="input-hint"><span id="plate-count">0</span>/8</div></div>
+        <div class="form-group"><label class="label">Matrícula</label><input id="inp-plate" class="input input-plate" type="text" placeholder="AA-00-AA" maxlength="8" style="text-transform:uppercase;letter-spacing:.15em"/><div class="input-hint"><span id="plate-count">0</span>/8 · formato AA-00-AA</div></div>
         <div class="form-group"><label class="label">Marca</label>
           <div class="brand-select-wrap">
             <button type="button" id="brand-combobox" class="brand-combobox"><span class="brand-combobox-left" id="brand-combobox-label"><span style="color:var(--muted)">Pesquisar marca...</span></span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
