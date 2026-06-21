@@ -1,2 +1,3 @@
 .github/
 .env
+!raspberry/.env
