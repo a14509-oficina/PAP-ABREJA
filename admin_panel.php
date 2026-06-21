@@ -1,46 +1,19 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/helpers.php';
 
-session_start();
-
-$error = '';
-$user = $_SESSION['admin_user'] ?? null;
-
-// Login
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
-    $email    = strtolower(trim($_POST['email']));
-    $password = $_POST['password'] ?? '';
-    $result   = supabase('users?email=ilike.' . urlencode($email) . '&select=*');
-    if (empty($result)) {
-        $error = 'Email ou password incorretos';
-    } else {
-        $row = $result[0];
-        if (!$row['is_admin']) {
-            $error = 'Sem permissões de administrador';
-        } elseif (!password_verify($password, $row['password'])) {
-            $error = 'Email ou password incorretos';
-        } else {
-            $_SESSION['admin_user'] = [
-                'id'           => $row['id'],
-                'email'        => $row['email'],
-                'displayName'  => $row['display_name'] ?? 'Admin',
-                'isSuperAdmin' => (bool)($row['is_super_admin'] ?? false),
-            ];
-            header('Location: admin_panel.php');
-            exit;
-        }
-    }
-}
-
-// Logout
-if (isset($_GET['logout'])) {
-    unset($_SESSION['admin_user']);
-    header('Location: admin_panel.php');
+$user = getLoggedUser();
+if (!$user || empty($user['isAdmin'])) {
+    header('Location: index.php');
     exit;
 }
 
-$user = $_SESSION['admin_user'] ?? null;
+if (isset($_GET['logout'])) {
+    logoutUser();
+    header('Location: index.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt">

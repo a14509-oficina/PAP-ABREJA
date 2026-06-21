@@ -136,6 +136,20 @@ document.getElementById('gate-sort').addEventListener('change', e => {
   renderGates();
 });
 
+// ════ CONFIRM MODAL ════
+function showConfirm(title, message, icon='⚠️'){
+  return new Promise(resolve => {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-icon').textContent = icon;
+    document.getElementById('modal-confirm').classList.remove('hidden');
+    const cleanup = () => { document.getElementById('modal-confirm').classList.add('hidden'); };
+    document.getElementById('confirm-ok').onclick = () => { cleanup(); resolve(true); };
+    document.getElementById('confirm-cancel').onclick = () => { cleanup(); resolve(false); };
+    document.getElementById('modal-confirm').onclick = e => { if(e.target===document.getElementById('modal-confirm')) { cleanup(); resolve(false); } };
+  });
+}
+
 // ════ TABS ════
 document.querySelectorAll('.nav-tab').forEach(tab=>{
   tab.onclick=()=>{
@@ -325,7 +339,7 @@ function renderCars(){
   }).join('');
   list.querySelectorAll('.btn-edit-car').forEach(btn=>btn.onclick=()=>{const c=cars.find(c=>c.id==btn.dataset.id);if(c)openCarForm(c);});
   list.querySelectorAll('.btn-del-car').forEach(btn=>btn.onclick=async()=>{
-    if(!confirm('Remover este carro?'))return;
+    if(!await showConfirm('Remover Carro','Tem a certeza que pretende remover este carro?'))return;
     try{await api('DELETE',`api/cars.php?id=${btn.dataset.id}`);await loadCars();toast('Carro removido.');}
     catch(e){toast('Erro',e.message,'error');}
   });
@@ -423,7 +437,7 @@ function renderGates(){
   list.querySelectorAll('.btn-detail-gate').forEach(btn=>btn.onclick=()=>{const g=gates.find(g=>g.id==btn.dataset.id);if(g)openGateDetail(g);});
   list.querySelectorAll('.btn-edit-gate').forEach(btn=>btn.onclick=()=>{const g=gates.find(g=>g.id==btn.dataset.id);if(g)openGateForm(g);});
   list.querySelectorAll('.btn-del-gate').forEach(btn=>btn.onclick=async()=>{
-    if(!confirm('Remover este portão?'))return;
+    if(!await showConfirm('Remover Portão','Tem a certeza que pretende remover este portão?'))return;
     try{await api('DELETE',`api/gates.php?id=${btn.dataset.id}`);await loadGates();toast('Portão removido.');}
     catch(e){toast('Erro',e.message,'error');}
   });

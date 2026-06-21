@@ -1,18 +1,18 @@
 <?php
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/helpers.php';
-
-session_start();
 
 $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 
 // ── Ler definições de manutenção publicamente; o resto exige admin
 if ($action !== 'settings' || $method !== 'GET') {
-    if (!isset($_SESSION['admin_user'])) {
-        jsonResponse(['error' => 'Não autenticado'], 401);
-    }
+    requireAdmin();
 }
+
+// Admin log helper
+$adminUser = getLoggedUser();
 
 function createAdminLog(array $data): void {
     supabase('admin_logs', 'POST', $data);
@@ -85,12 +85,12 @@ switch ($action) {
             if (isset($body['is_admin'])) {
                 $patch['is_admin'] = (bool)$body['is_admin'];
             }
-            if (isset($body['is_super_admin']) && ($_SESSION['admin_user']['isSuperAdmin'] ?? false)) {
+            if (isset($body['is_super_admin']) && ($adminUser['isSuperAdmin'] ?? false)) {
                 $patch['is_super_admin'] = (bool)$body['is_super_admin'];
             }
             if (empty($patch)) jsonResponse(['error' => 'Nada para atualizar'], 400);
 
-            if ($id == ($_SESSION['admin_user']['id'] ?? '') && isset($patch['is_admin']) && !$patch['is_admin']) {
+            if ($id == ($adminUser['id'] ?? '') && isset($patch['is_admin']) && !$patch['is_admin']) {
                 jsonResponse(['error' => 'Não podes remover o teu próprio admin'], 400);
             }
 
@@ -103,7 +103,7 @@ switch ($action) {
             if ($reason !== '' && isset($patch['is_admin'])) {
                 $actionType = $patch['is_admin'] ? 'promote_admin' : 'demote_admin';
                 createAdminLog([
-                    'admin_id' => $_SESSION['admin_user']['id'],
+                    'admin_id' => $adminUser['id'],
                     'user_id'  => $id,
                     'action'   => $actionType,
                     'reason'   => $reason,
@@ -123,7 +123,7 @@ switch ($action) {
             supabase('users?id=eq.' . urlencode($id), 'DELETE');
 
             createAdminLog([
-                'admin_id' => $_SESSION['admin_user']['id'],
+                'admin_id' => $adminUser['id'],
                 'user_id'  => $id,
                 'action'   => 'delete_user',
                 'reason'   => $reason,

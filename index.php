@@ -12,6 +12,7 @@ startSession();
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="style.css"/>
   <link rel="manifest" href="manifest.json"/>
+  <link rel="icon" href="logo.png" type="image/png"/>
 </head>
 <body>
 
@@ -170,6 +171,19 @@ startSession();
       <div id="gates-list"></div>
     </div>
   </main>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="modal-confirm" class="modal-overlay hidden">
+  <div class="modal" style="max-width:20rem;text-align:center">
+    <div style="font-size:2rem;margin-bottom:.75rem" id="confirm-icon">⚠️</div>
+    <div style="font-weight:600;margin-bottom:.5rem;font-size:1.05rem" id="confirm-title">Tem a certeza?</div>
+    <div style="color:var(--muted);font-size:.875rem;margin-bottom:1.25rem" id="confirm-message"></div>
+    <div class="modal-actions" style="justify-content:center">
+      <button class="btn btn-ghost" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
+    </div>
+  </div>
 </div>
 
 <!-- GATE DETAIL MODAL -->
