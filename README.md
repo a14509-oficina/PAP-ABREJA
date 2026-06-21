@@ -1,50 +1,74 @@
 # 🚪 AbreJá — Gestão de Acessos e Portões
 
-Solução web **mobile-friendly** para controlo centralizado de portões automáticos. Interface simples ligada ao **Supabase** e integrada com hardware (ex: Raspberry Pi).
+Solução web **mobile-friendly** + **Raspberry Pi** para controlo centralizado de portões automáticos com leitura de matrículas.
 
 ## ✨ Funcionalidades
 
-- **Autenticação Segura** — Registo, login e sessões seguras
-- **Recuperação de Password** — Link de reset gerado na própria aplicação (sem depender de email)
-- **Gestão de Portões** — Adicionar, editar, remover e abrir remotamente
-- **Controlo de Acessos** — Partilha de portões com outros utilizadores (com ou sem expiração)
+### Web App
+- **Autenticação** — Registo, login (email ou nome), sessões seguras, "Manter sessão"
+- **Recuperação de Password** — Link de reset gerado na própria aplicação
+- **Gestão de Portões** — CRUD, abertura remota, partilha com outros utilizadores
 - **Agendamentos** — Abertura automática em dias e horas específicos
-- **Gestão de Veículos** — Associar carros a portões (matrícula, marca, cor)
-- **Logs em Tempo Real** — Registo detalhado de aberturas
-- **Painel Admin** — Gestão de utilizadores, configurações e modo de manutenção
-- **PWA Ready** — Instalável como Web App no smartphone
+- **Gestão de Veículos** — CRUD com validação de matrícula portuguesa (AA-00-AA)
+- **Logs em Tempo Real** — Registo detalhado com auto-refresh e paginação
+- **Pesquisa e Ordenação** — Filtrar carros/portões por nome, matrícula, etc.
+- **CSRF Protection** — Tokens anti-CSRF nos formulários
+- **Rate Limiting** — Proteção contra brute force no login/forgot
+- **Painel Admin** — Gestão de utilizadores, modo de manutenção, export CSV dos logs
+- **PWA Ready** — Manifest para instalação como Web App no smartphone
+
+### Raspberry Pi (ipcam.py)
+- **Leitura de Matrículas** — OCR com Plate Recognizer
+- **Sistema de Confirmação** — Requer N leituras consecutivas iguais antes de abrir
+- **Cache de Matrículas** — Evita consultas repetidas ao Supabase
+- **Controlo de Relé** — Acionamento GPIO para abrir portões
+- **Integração App** — Polling de pedidos abertos pela app web
+- **Registo de Logs** — Tentaivas autorizadas e negadas registadas na base de dados
 
 ## 🛠️ Tecnologias
 
-| Camada      | Tecnologia                     |
-|-------------|--------------------------------|
-| Frontend    | HTML5, CSS3 (Vanilla), JavaScript |
-| Backend     | PHP 8.x                        |
-| Base de Dados | Supabase (PostgreSQL)        |
-| Hospedagem  | Railway                        |
-| Versionamento | GitHub                       |
+| Camada        | Tecnologia                          |
+|---------------|-------------------------------------|
+| Frontend      | HTML5, CSS3 (Vanilla), JavaScript   |
+| Backend       | PHP 8.x                             |
+| Base de Dados | Supabase (PostgreSQL)               |
+| Hospedagem    | Railway                             |
+| Hardware      | Raspberry Pi + Câmara + Relé GPIO   |
+| OCR           | Plate Recognizer API                |
 
 ## 📋 Pré-requisitos
 
-- PHP 8.2+
-- Extensão `php-curl` ativada
+- PHP 8.2+ com `ext-curl`
 - Conta no [Supabase](https://supabase.com)
+- (Opcional) Raspberry Pi com câmara para leitura de matrículas
 
-## 🔧 Instalação
-
-### 1. Clonar o repositório
+## 🔧 Instalação — Web App
 
 ```bash
 git clone https://github.com/a14509-oficina/PAP-ABREJA.git
 cd PAP-ABREJA
 ```
 
-### 2. Configurar Base de Dados (Supabase)
+Criar ficheiro `.env` na raiz:
 
-Criar as tabelas necessárias no SQL Editor do Supabase:
+```env
+SUPABASE_URL=https://teuprojeto.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_KEY=eyJ...
+```
+
+Iniciar servidor:
+
+```bash
+php -S localhost:8000
+```
+
+### Base de Dados (Supabase)
+
+Criar as tabelas no SQL Editor do Supabase:
 
 <details>
-<summary>SQL das tabelas</summary>
+<summary>SQL completo das tabelas</summary>
 
 ```sql
 CREATE TABLE users (
@@ -146,59 +170,76 @@ CREATE TABLE open_requests (
 ```
 </details>
 
-### 3. Configurar variáveis de ambiente
+## 📱 Raspberry Pi
 
-Criar ficheiro `.env` na raiz do projeto:
+### 1. Configurar o hardware
 
-```env
-SUPABASE_URL=https://teuprojeto.supabase.co
-SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_KEY=eyJ...
-```
+- GPIO17 → Relé (ou outro pino definido no `.env`)
+- Câmara USB ou IP
 
-### 4. Iniciar servidor de desenvolvimento
+### 2. Instalar dependências
 
 ```bash
-php -S localhost:8000
+cd PAP-ABREJA/raspberry
+pip install -r requirements.txt  # opencv-python, requests, python-dotenv, RPi.GPIO
 ```
 
-### 5. (Opcional) Envio de emails
+### 3. Configurar `.env`
 
-O sistema gera o link de reset diretamente no ecrã. Se quiseres ativar o envio automático por email, define a variável:
+Editar `raspberry/.env` com as tuas credenciais:
 
 ```env
-SENDGRID_API_KEY=SG.xxxxx
+SUPABASE_URL="https://teuprojeto.supabase.co"
+SUPABASE_KEY="tua-service-key"
+CAMERA_URL="http://IP:PORT/video"
+RELAY_PIN=17
+RELAY_TIME=2
+PLATE_REC_TOKEN="token-plate-recognizer"
+COOLDOWN=20
+PROCESS_INTERVAL=2.0
+CACHE_TTL=300
+CONFIRMAR_EM=3
+ROTATE=0
+FULLSCREEN=false
+```
+
+### 4. Iniciar
+
+```bash
+python3 raspberry/ipcam.py
 ```
 
 ## 📁 Estrutura do Projeto
 
 ```
-├── api/
-│   ├── auth.php       # Autenticação (login, registo, forgot/reset password)
-│   ├── gates.php      # CRUD de portões, abertura, partilhas, agendamentos
-│   ├── cars.php       # CRUD de veículos
-│   ├── admin.php      # Painel de administração
-│   └── blocked.php    # Gestão de utilizadores bloqueados
+├── api/                    # Endpoints REST
+│   ├── auth.php            # Autenticação (login, registo, forgot/reset)
+│   ├── gates.php           # CRUD de portões, abertura, partilhas, agendamentos
+│   ├── cars.php            # CRUD de veículos (com validação de matrícula)
+│   ├── admin.php           # Painel de administração + export CSV
+│   └── blocked.php         # Gestão de utilizadores bloqueados
 ├── includes/
-│   ├── config.php     # Credenciais e constantes
-│   ├── db.php         # Conexão ao Supabase (REST API)
-│   ├── auth.php       # Sessões e helpers de autenticação
-│   └── helpers.php    # Funções utilitárias
-├── index.php          # Página principal (login + app)
-├── reset_password.php # Formulário de redefinição de password
-├── admin_panel.php    # Painel de administração
-├── abrir_portao.php   # Script de acionamento por relé
-├── style.css          # Estilos completos
-├── app.js             # Lógica frontend
-└── nixpacks.toml      # Configuração de deploy (Railway)
+│   ├── config.php          # Credenciais e constantes (com loader de .env)
+│   ├── db.php              # Conexão REST ao Supabase
+│   ├── auth.php            # Sessões, CSRF, Remember Me
+│   └── helpers.php         # JSON response, rate limiting, error logging
+├── raspberry/
+│   ├── ipcam.py            # Script de leitura de matrículas + relé
+│   └── .env                # Configuração do Pi (tracked no git)
+├── index.php               # Página principal (SPA: login + app)
+├── reset_password.php      # Formulário de redefinição de password
+├── admin_panel.php         # Painel de administração
+├── privacidade.php         # Política de privacidade
+├── style.css               # Estilos completos
+├── app.js                  # Lógica frontend (SPA)
+└── nixpacks.toml           # Deploy Railway
 ```
 
 ## 🚀 Deploy no Railway
 
-O projeto está configurado para deploy automático no [Railway](https://railway.app) via `nixpacks.toml`. Basta ligar o repositório GitHub e o Railway faz o resto.
+O projeto está configurado para deploy automático no [Railway](https://railway.app) via `nixpacks.toml`. Basta ligar o repositório GitHub.
 
 ```toml
-# nixpacks.toml
 [phases.setup]
 nixPkgs = ["php82", "php82Extensions.curl", "php82Extensions.pdo", "php82Extensions.session"]
 
