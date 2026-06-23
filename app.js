@@ -670,6 +670,11 @@ function showMaintenance(message){
   document.getElementById('maintenance-message').textContent = message || 'O site está em manutenção.';
 }
 
+// ════ PWA ════
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
 // ════ INIT ════
 (async()=>{
   try{

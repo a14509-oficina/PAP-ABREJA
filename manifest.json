@@ -1,16 +1,25 @@
 {
-  "name": "A Minha Garagem",
-  "short_name": "Garagem",
-  "description": "Gestão de veículos pessoais",
+  "name": "Abre Já",
+  "short_name": "Abre Já",
+  "description": "Controlo de acessos e portões automáticos",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0d1117",
-  "theme_color": "#dc2626",
+  "background_color": "#0d0f14",
+  "theme_color": "#e53935",
+  "orientation": "portrait",
+  "categories": ["utilities", "lifestyle"],
   "icons": [
     {
       "src": "logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
