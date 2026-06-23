@@ -175,6 +175,22 @@ switch ($action) {
         }
         jsonResponse(['error' => 'Método não suportado'], 405);
 
+    // ── Chat Admin ───────────────────────────────────────────────────────────
+    case 'chat':
+        if ($method === 'POST') {
+            $body = getBody();
+            $msg = trim($body['message'] ?? '');
+            if (!$msg) jsonResponse(['error' => 'Mensagem vazia'], 400);
+            supabase('admin_logs', 'POST', [
+                'admin_id' => $adminUser['id'],
+                'action'   => 'chat',
+                'reason'   => $msg,
+                'details'  => $msg,
+            ]);
+            jsonResponse(['ok' => true]);
+        }
+        jsonResponse(['error' => 'Método não suportado'], 405);
+
     // ── Exportar logs para CSV ───────────────────────────────────────────────
     case 'export-logs':
         $rows = supabase('access_logs?order=created_at.desc&limit=5000&select=*');

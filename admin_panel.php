@@ -239,9 +239,8 @@ if (isset($_GET['logout'])) {
   <script>
     // Configurações Globais de API e Helpers
     const ADMIN_ID = '<?= $user['id'] ?>';
-    const token = '<?=bin2hex($user['email']??'')?>'; 
     async function api(method, url, data=null) {
-      const headers = {'Content-Type':'application/json','X-Admin-Auth':token};
+      const headers = {'Content-Type':'application/json'};
       const opt = {method, headers, credentials: 'include'};
       if(data) opt.body = JSON.stringify(data);
       const r = await fetch(url, opt);
@@ -463,12 +462,50 @@ if (isset($_GET['logout'])) {
     }
 
     // ── Chat Admin ────────────────────────────────────────────────────────────
+    let chatTimer = null;
+
     async function loadAdminChat() {
-      document.getElementById('admin-chat-list').innerHTML = '<p style="color:var(--muted);font-size:.85rem;padding:.5rem 0">Chat disponível em breve.</p>';
+      try {
+        const rows = await api('GET', 'api/admin.php?action=admin-log');
+        const msgs = rows.filter(r => r.action === 'chat');
+        const list = document.getElementById('admin-chat-list');
+        if(!msgs.length) { list.innerHTML = '<p style="color:var(--muted);font-size:.85rem;padding:.5rem 0">Sem mensagens.</p>'; return; }
+        list.innerHTML = msgs.map(m => {
+          const name = m.users?.display_name || m.users?.email || 'Admin';
+          const time = m.created_at ? new Date(m.created_at).toLocaleString('pt-PT') : '';
+          return `<div style="background:var(--secondary);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem">
+            <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+              <span style="font-weight:600;font-size:.85rem">${name}</span>
+              <span style="font-size:.7rem;color:var(--muted)">${time}</span>
+            </div>
+            <div style="color:var(--muted);font-size:.85rem">${m.detail || m.reason || ''}</div>
+          </div>`;
+        }).join('');
+        list.scrollTop = list.scrollHeight;
+        clearTimeout(chatTimer);
+        chatTimer = setTimeout(loadAdminChat, 5000);
+      } catch(e) { /* ignore */ }
     }
+
     async function sendAdminChat() {
-      toast('Chat', 'Disponível em breve', '');
+      const msg = document.getElementById('admin-chat-input').value.trim();
+      if(!msg) return;
+      const btn = document.querySelector('[onclick="sendAdminChat()"]');
+      btn.disabled = true;
+      try {
+        await api('POST', 'api/admin.php?action=chat', { message: msg });
+        document.getElementById('admin-chat-input').value = '';
+        loadAdminChat();
+      } catch(e) { toast('Erro', e.message, 'error'); }
+      finally { btn.disabled = false; }
     }
+
+    // Close chat timer when switching tabs
+    const origChTab = chTab;
+    chTab = function(tabId, btn) {
+      clearTimeout(chatTimer);
+      origChTab(tabId, btn);
+    };
 
     // ── Ações de Utilizador (em vez de admin_action.php) ──────────────────────
     async function deleteUser(id, email) {
