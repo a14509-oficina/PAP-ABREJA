@@ -150,10 +150,11 @@ if (isset($_GET['logout'])) {
 
     <div class="tabs">
       <button class="tab active" onclick="chTab('users', this)">Utilizadores</button>
-      <button class="tab" onclick="chTab('gates', this)">Portões (Novo)</button>
-      <button class="tab" onclick="chTab('logs', this)">Logs do Sistema</button>
+      <button class="tab" onclick="chTab('cars', this)">🚗 Carros</button>
+      <button class="tab" onclick="chTab('gates', this)">Portões</button>
+      <button class="tab" onclick="chTab('logs', this)">Logs</button>
       <button class="tab" onclick="chTab('admin-log', this)">Registos Admin</button>
-      <button class="tab" onclick="chTab('chat', this)" style="opacity:0.4">Chat Admin</button>
+      <button class="tab" onclick="chTab('chat', this)">Chat Admin</button>
       <button class="tab" onclick="chTab('settings', this)">Definições</button>
     </div>
 
@@ -190,6 +191,15 @@ if (isset($_GET['logout'])) {
     <div id="tab-logs" class="tab-content hidden">
       <div id="adminlog-wrap">
         <div style="padding:2rem;text-align:center"><div class="skeleton" style="width:100%;height:4rem"></div></div>
+      </div>
+    </div>
+
+    <div id="tab-cars" class="tab-content hidden">
+      <div class="card" style="padding:0;overflow:hidden">
+        <h3 class="card-title" style="padding:1rem 1.5rem 0 1.5rem">Carros Registados no Sistema</h3>
+        <div id="admin-cars-list">
+          <div style="padding:2rem;text-align:center"><div class="skeleton" style="width:100%;height:3rem"></div></div>
+        </div>
       </div>
     </div>
 
@@ -270,6 +280,7 @@ if (isset($_GET['logout'])) {
       btn.classList.add('active');
       document.getElementById(`tab-${tabId}`).classList.remove('hidden');
       if(tabId === 'users') loadUsers();
+      if(tabId === 'cars') loadAdminCars();
       if(tabId === 'gates') loadAdminGates();
       if(tabId === 'logs') loadLogs();
       if(tabId === 'admin-log') loadAdminLog();
@@ -358,6 +369,34 @@ if (isset($_GET['logout'])) {
       } catch(e) {
         document.getElementById('gates-list-wrap').innerHTML = `<p style="color:var(--destructive);padding:1.5rem">${e.message}</p>`;
       }
+    }
+
+    // ── Carros ─────────────────────────────────────────────────────────────
+    async function loadAdminCars() {
+      try {
+        const cars = await api('GET', 'api/admin.php?action=cars');
+        const wrap = document.getElementById('admin-cars-list');
+        if(!cars.length) { wrap.innerHTML = '<p style="padding:1.5rem;color:var(--muted)">Sem carros registados.</p>'; return; }
+        wrap.innerHTML = `<div style="padding:0;overflow:hidden">` + cars.map(c => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;border-bottom:1px solid var(--border)">
+            <div>
+              <span style="font-family:var(--font-d);font-size:.8rem;background:var(--secondary);padding:.15rem .45rem;border-radius:.25rem;border:1px solid var(--border)">${c.plate}</span>
+              <span style="margin-left:.5rem">${c.brand}</span>
+              <span style="font-size:.75rem;color:var(--muted);margin-left:.5rem">· ${c.user_id}</span>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="deleteAdminCar('${c.id}')">🗑️</button>
+          </div>
+        `).join('') + `</div>`;
+      } catch(e) { document.getElementById('admin-cars-list').innerHTML = `<p style="color:var(--destructive);padding:1.5rem">${e.message}</p>`; }
+    }
+
+    async function deleteAdminCar(id) {
+      if(!confirm('Tem a certeza que pretende eliminar este carro?')) return;
+      try {
+        await api('DELETE', `api/cars.php?id=${id}`);
+        toast('Carro eliminado', '', 'success');
+        loadAdminCars();
+      } catch(e) { toast('Erro', e.message, 'error'); }
     }
 
     // NOVA FUNÇÃO: Criar Novo Portão via Admin
