@@ -121,7 +121,6 @@ $logs  = supabase('access_logs?user_id=eq.' . urlencode($client_id) . '&select=*
     <div class="card">
       <div class="card-title">
         🚗 Carros Registados
-        <button class="btn btn-success btn-sm" onclick="openCarModal()">+ Adicionar</button>
       </div>
       <?php if (empty($cars)): ?>
         <p class="empty">Nenhum carro registado.</p>
@@ -132,10 +131,7 @@ $logs  = supabase('access_logs?user_id=eq.' . urlencode($client_id) . '&select=*
               <span class="plate-box"><?=htmlentities($car['plate'])?></span>
               <span style="margin-left:.75rem;font-weight:500;"><?=htmlentities(trim(($car['brand'] ?? '') . ' ' . ($car['model'] ?? '')))?></span>
             </div>
-            <div style="display:flex;gap:.5rem">
-              <button class="btn btn-ghost btn-sm" onclick='editCar(<?=json_encode($car)?>)'>✏️ Editar</button>
-              <button class="btn btn-ghost btn-sm" style="color:var(--primary)" onclick="deleteCar(<?=$car['id']?>)">🗑️</button>
-            </div>
+            <div style="font-size:.75rem;color:var(--muted)">Cor: <?=htmlentities($car['color'] ?? '')?></div>
           </div>
         <?php endforeach; ?>
       <?php endif; ?>
@@ -147,7 +143,6 @@ $logs  = supabase('access_logs?user_id=eq.' . urlencode($client_id) . '&select=*
     <div class="card">
       <div class="card-title">
         🚪 Portões
-        <button class="btn btn-success btn-sm" onclick="openGateModal()">+ Adicionar</button>
       </div>
       <?php if (empty($gates)): ?>
         <p class="empty">Nenhum portão registado.</p>
@@ -159,10 +154,7 @@ $logs  = supabase('access_logs?user_id=eq.' . urlencode($client_id) . '&select=*
               <span style="font-weight:600;margin-left:.5rem"><?=htmlentities($gate['name'])?></span>
               <br><span style="font-size:.7rem;color:var(--muted)">Relay: <code><?=htmlentities($gate['relay_id'] ?? 'N/D')?></code></span>
             </div>
-            <div style="display:flex;gap:.5rem">
-              <button class="btn btn-ghost btn-sm" onclick='editGate(<?=json_encode($gate)?>)'>✏️ Editar</button>
-              <button class="btn btn-ghost btn-sm" style="color:var(--primary)" onclick="deleteGate(<?=$gate['id']?>)">🗑️</button>
-            </div>
+            <div style="font-size:.75rem;color:var(--muted)">Criado em: <?=htmlentities(date('d/m/Y', strtotime($gate['created_at'] ?? '')))?></div>
           </div>
         <?php endforeach; ?>
       <?php endif; ?>

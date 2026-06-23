@@ -149,13 +149,13 @@ if (isset($_GET['logout'])) {
     </div>
 
     <div class="tabs">
-      <button class="tab active" onclick="chTab('users', this)">Utilizadores</button>
-      <button class="tab" onclick="chTab('cars', this)">🚗 Carros</button>
-      <button class="tab" onclick="chTab('gates', this)">Portões</button>
-      <button class="tab" onclick="chTab('logs', this)">Logs</button>
-      <button class="tab" onclick="chTab('admin-log', this)">Registos Admin</button>
-      <button class="tab" onclick="chTab('chat', this)">Chat Admin</button>
-      <button class="tab" onclick="chTab('settings', this)">Definições</button>
+      <button class="tab active" onclick="chTab('users', this)">👥 Utilizadores</button>
+      <button class="tab" onclick="chTab('cars', this)">🚗 Veículos</button>
+      <button class="tab" onclick="chTab('gates', this)">🚪 Portões</button>
+      <button class="tab" onclick="chTab('logs', this)">📋 Acessos</button>
+      <button class="tab" onclick="chTab('admin-log', this)">📜 Histórico Admin</button>
+      <button class="tab" onclick="chTab('chat', this)">💬 Chat</button>
+      <button class="tab" onclick="chTab('settings', this)">⚙️ Configurações</button>
     </div>
 
     <div id="tab-users" class="tab-content">
@@ -165,23 +165,8 @@ if (isset($_GET['logout'])) {
     </div>
 
     <div id="tab-gates" class="tab-content hidden">
-      <div class="card">
-        <h3 class="card-title">Adicionar Novo Portão</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
-          <div>
-            <label class="label">Nome do Portão</label>
-            <input type="text" id="new-gate-name" class="input" placeholder="Ex: Portão Principal"/>
-          </div>
-          <div>
-            <label class="label">Relay / Endpoint GPIO</label>
-            <input type="text" id="new-gate-relay" class="input" placeholder="Ex: relay1"/>
-          </div>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="createNewGate()">Criar Portão</button>
-      </div>
-
       <div class="card" style="padding:0;overflow:hidden">
-        <h3 class="card-title" style="padding:1.5rem 1.5rem 0 1.5rem">Portões Registados no Sistema</h3>
+        <h3 class="card-title" style="padding:1.5rem 1.5rem 0 1.5rem">Todos os Portões</h3>
         <div id="gates-list-wrap">
           <div style="padding:2rem;text-align:center"><div class="skeleton" style="width:100%;height:3rem"></div></div>
         </div>
@@ -196,7 +181,7 @@ if (isset($_GET['logout'])) {
 
     <div id="tab-cars" class="tab-content hidden">
       <div class="card" style="padding:0;overflow:hidden">
-        <h3 class="card-title" style="padding:1rem 1.5rem 0 1.5rem">Carros Registados no Sistema</h3>
+        <h3 class="card-title" style="padding:1rem 1.5rem 0 1.5rem">Todos os Veículos</h3>
         <div id="admin-cars-list">
           <div style="padding:2rem;text-align:center"><div class="skeleton" style="width:100%;height:3rem"></div></div>
         </div>
@@ -396,20 +381,6 @@ if (isset($_GET['logout'])) {
         await api('DELETE', `api/cars.php?id=${id}`);
         toast('Carro eliminado', '', 'success');
         loadAdminCars();
-      } catch(e) { toast('Erro', e.message, 'error'); }
-    }
-
-    // NOVA FUNÇÃO: Criar Novo Portão via Admin
-    async function createNewGate() {
-      const name = document.getElementById('new-gate-name').value.trim();
-      const relay = document.getElementById('new-gate-relay').value.trim();
-      if(!name || !relay) { toast('Erro', 'Preencha todos os campos', 'error'); return; }
-      try {
-        await api('POST', 'api/gates.php', { name, relay_trigger: relay });
-        toast('Sucesso', 'Portão adicionado globalmente', 'success');
-        document.getElementById('new-gate-name').value = '';
-        document.getElementById('new-gate-relay').value = '';
-        loadAdminGates();
       } catch(e) { toast('Erro', e.message, 'error'); }
     }
 
