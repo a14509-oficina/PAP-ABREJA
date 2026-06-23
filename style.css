@@ -220,3 +220,31 @@ header.app-header{position:sticky;top:0;z-index:10;background:hsl(220 20% 7%/.92
 /* ── Badge ── */
 .badge{font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .45rem;border-radius:.3rem}
 .badge-shared{background:hsl(215 80% 55%/.15);color:hsl(215 80% 70%);border:1px solid hsl(215 80% 55%/.3)}
+
+/* ── Responsivo ── */
+@media(max-width:640px){
+  .section-header{flex-wrap:wrap;gap:.5rem}
+  .section-header > div:last-child{width:100%!important;display:flex;gap:.5rem}
+  .section-header input{flex:1;width:auto!important}
+  .car-inner,.gate-inner{flex-wrap:wrap;gap:.5rem}
+  .card-actions{opacity:1;width:100%;justify-content:flex-end;padding-top:.25rem}
+  .gate-actions{width:100%;justify-content:flex-start;padding-top:.25rem}
+  .color-grid{grid-template-columns:repeat(4,1fr)}
+  .form-row{grid-template-columns:1fr}
+  .auth-hero{display:none!important}
+  #auth-page{flex-direction:column}
+  .app-main,.header-inner{padding:.75rem}
+  .modal{padding:1rem;max-width:100%}
+  .nav-tab{font-size:.55rem;padding:.35rem .35rem}
+  .header-title{font-size:.75rem}
+  .auth-form-panel{padding:2rem 1rem}
+  .brand-list{max-height:10rem}
+}
+@media(max-width:1024px){
+  .auth-hero{display:none}
+}
+
+/* ── Ações sempre visíveis em touch ── */
+@media(hover:none){
+  .card-actions,.gate-actions{opacity:1}
+}
