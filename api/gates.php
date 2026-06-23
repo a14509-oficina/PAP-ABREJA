@@ -19,10 +19,8 @@ $action = $_GET['action'] ?? '';
 if ($method === 'GET' && !$id && !$action) {
     $isAdmin = !empty($user['isAdmin']);
 
-    if ($isAdmin) {
-        $gates = supabase('gates?select=*&order=name.asc');
-        jsonResponse($gates);
-    }
+    // Admin vê portões como qualquer utilizador (só os seus + partilhados)
+    // O painel admin (admin_panel.php) é que mostra tudo
 
     $ownGates = supabase('gates?created_by=eq.' . urlencode($userId) . '&select=*&order=name.asc');
     $ownIds = array_column($ownGates, 'id');
