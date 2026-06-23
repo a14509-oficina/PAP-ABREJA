@@ -1,31 +1,37 @@
-const CACHE = 'abreja-v1';
-const urls = [
+const CACHE = 'abreja-v2';
+const STATIC = [
   '/',
-  '/index.php',
   '/style.css',
   '/app.js',
   '/manifest.json',
   '/logo.png',
-  '/includes/config.php',
-  '/includes/db.php',
-  '/includes/auth.php',
-  '/includes/helpers.php',
 ];
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(urls))
+    caches.open(CACHE).then(c => c.addAll(STATIC))
   );
 });
 
 self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+  if (url.pathname.startsWith('/api/')) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
   e.respondWith(
-    caches.match(e.request).then(res => res || fetch(e.request))
+    caches.match(e.request).then(res => res || fetch(e.request).then(r => {
+      if (!url.pathname.includes('.php')) {
+        const resp = r.clone();
+        caches.open(CACHE).then(c => c.put(e.request, resp));
+      }
+      return r;
+    }))
   );
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
   );
 });
