@@ -130,7 +130,13 @@ def processar_ocr(frame):
         if res.status_code in [200, 201]:
             data = res.json()
             if data.get('results'):
-                plate = data['results'][0]['plate'].upper()
+                plate_raw = data['results'][0]['plate'].upper()
+                # Formatar matrícula portuguesa (AA-00-AA) para corresponder ao formato da BD
+                plate_raw = plate_raw.replace("-", "").replace(" ", "")
+                if len(plate_raw) == 6:
+                    plate = f"{plate_raw[:2]}-{plate_raw[2:4]}-{plate_raw[4:]}"
+                else:
+                    plate = plate_raw
                 confidence = data['results'][0]['score']
 
                 # Só aceita se confiança for alta
